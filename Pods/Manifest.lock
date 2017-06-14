@@ -1,11 +1,10 @@
 PODS:
-  - Alamofire (3.5.1)
+  - Alamofire (4.4.0)
   - IQKeyboardManagerSwift (4.0.4)
   - JLToast (1.4.2)
   - MBProgressHUD (1.0.0)
   - MJRefresh (3.1.12)
-  - PopupDialog (0.4.0):
-    - TZStackView
+  - PopupDialog (0.5.4)
   - SwiftyJSON (2.4.0)
   - TZStackView (1.2.0)
   - UIViewController+NavigationBar (0.3.3)
@@ -24,17 +23,17 @@ DEPENDENCIES:
   - XCGLogger (= 3.6.0)
 
 SPEC CHECKSUMS:
-  Alamofire: 0dfba1184a543e2aa160f4e39cac4e8aba48d223
+  Alamofire: dc44b1600b800eb63da6a19039a0083d62a6a62d
   IQKeyboardManagerSwift: e0964d04d6a29b71016fd346dca13ecb80a2823a
   JLToast: eaeb7c602a60da4525919e6664f874d3cf3247b2
   MBProgressHUD: 4890f671c94e8a0f3cf959aa731e9de2f036d71a
   MJRefresh: b96cdb21c4aa75a7b07654311ab2f315c497e806
-  PopupDialog: 5f87c0c97af1cf5f2eee6e5a83421c3fc0d22fb5
+  PopupDialog: 75cf955693590b0cb2fdde00223fb65d99c57247
   SwiftyJSON: 96918c1bf505efa50c4f72957018dd3452090c9c
   TZStackView: 4b82373b4aabe4d99adf739a34e1bc6755149272
-  UIViewController+NavigationBar: 1f72c3b1df21b24ee8fa13f822b5126f180b77f3
+  UIViewController+NavigationBar: cbf1628fec501efe53e107c5402ee445bd20c5b7
   XCGLogger: 53a3efe22e228e8b25ed8184bc074c2b06d48490
 
-PODFILE CHECKSUM: 73d7dee678051e0c19c26eb052ad9a1b5d7aee75
+PODFILE CHECKSUM: 4df1f62a6298fc483ab2a2e93a03ca6a1b50502a
 
-COCOAPODS: 1.1.0.beta.2
+COCOAPODS: 1.2.1.beta.1

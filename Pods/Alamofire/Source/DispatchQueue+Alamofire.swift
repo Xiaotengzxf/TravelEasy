@@ -1,8 +1,7 @@
 //
-//  PopupDialogDefaultButtons.swift
+//  DispatchQueue+Alamofire.swift
 //
-//  Copyright (c) 2016 Orderella Ltd. (http://orderella.co.uk)
-//  Author - Martin Wildfeuer (http://www.mwfire.de)
+//  Copyright (c) 2014-2016 Alamofire Software Foundation (http://alamofire.org/)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +22,16 @@
 //  THE SOFTWARE.
 //
 
+import Dispatch
 import Foundation
-import UIKit
 
-// MARK: Default button
+extension DispatchQueue {
+    static var userInteractive: DispatchQueue { return DispatchQueue.global(qos: .userInteractive) }
+    static var userInitiated: DispatchQueue { return DispatchQueue.global(qos: .userInitiated) }
+    static var utility: DispatchQueue { return DispatchQueue.global(qos: .utility) }
+    static var background: DispatchQueue { return DispatchQueue.global(qos: .background) }
 
-/// Represents the default button for the popup dialog
-public final class DefaultButton: PopupDialogButton {}
-
-// MARK: Cancel button
-
-/// Represents a cancel button for the popup dialog
-public final class CancelButton: PopupDialogButton {
-
-    override public func setupView() {
-        defaultTitleColor = UIColor.lightGray
-        super.setupView()
-    }
-}
-
-// MARK: destructive button
-
-/// Represents a destructive button for the popup dialog
-public final class DestructiveButton: PopupDialogButton {
-
-    override public func setupView() {
-        defaultTitleColor = UIColor.red
-        super.setupView()
+    func after(_ delay: TimeInterval, execute closure: @escaping () -> Void) {
+        asyncAfter(deadline: .now() + delay, execute: closure)
     }
 }

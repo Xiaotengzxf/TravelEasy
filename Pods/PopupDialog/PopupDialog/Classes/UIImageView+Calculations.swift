@@ -1,5 +1,5 @@
 //
-//  PopupDialogDefaultButtons.swift
+//  UIImageView+Calculations.swift
 //
 //  Copyright (c) 2016 Orderella Ltd. (http://orderella.co.uk)
 //  Author - Martin Wildfeuer (http://www.mwfire.de)
@@ -26,29 +26,19 @@
 import Foundation
 import UIKit
 
-// MARK: Default button
+internal extension UIImageView {
 
-/// Represents the default button for the popup dialog
-public final class DefaultButton: PopupDialogButton {}
-
-// MARK: Cancel button
-
-/// Represents a cancel button for the popup dialog
-public final class CancelButton: PopupDialogButton {
-
-    override public func setupView() {
-        defaultTitleColor = UIColor.lightGray
-        super.setupView()
-    }
-}
-
-// MARK: destructive button
-
-/// Represents a destructive button for the popup dialog
-public final class DestructiveButton: PopupDialogButton {
-
-    override public func setupView() {
-        defaultTitleColor = UIColor.red
-        super.setupView()
+    /*!
+     Calculates the height of the the UIImageView has to
+     have so the image is displayed correctly
+     - returns: Height to set on the imageView
+     */
+    internal func pv_heightForImageView() -> CGFloat {
+        guard let image = image, image.size.height > 0 else {
+            return 0.0
+        }
+        let width = bounds.size.width
+        let ratio = image.size.height / image.size.width
+        return width * ratio
     }
 }

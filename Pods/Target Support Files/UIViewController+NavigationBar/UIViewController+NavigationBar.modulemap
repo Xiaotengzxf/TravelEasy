@@ -1,0 +1,6 @@
+framework module UIViewController_NavigationBar {
+  umbrella header "UIViewController+NavigationBar-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="PassengerView" customModule="TravelEasy" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="75"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZPF-Vg-aM2">
+                    <constraints>
+                        <constraint firstAttribute="width" constant="60" id="y45-K5-K6x"/>
+                    </constraints>
+                    <state key="normal" image="icon_flight_delpersonal"/>
+                    <connections>
+                        <action selector="deletePassenger:" destination="iN0-l3-epB" eventType="touchUpInside" id="98c-ft-g6y"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aq8-hb-esM">
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <color key="textColor" red="0.13333333333333333" green="0.13333333333333333" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3B1-40-gWE">
+                    <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                    <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="审批单号" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xd3-k5-ozm">
+                    <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                    <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="所属项目" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f9O-xO-i9J">
+                    <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                    <color key="textColor" red="0.66666666666666663" green="0.66666666666666663" blue="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5qP-Sg-oGl">
+                    <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                    <color key="textColor" red="0.13333333333333333" green="0.13333333333333333" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="S6k-lR-SGf">
+                    <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                    <color key="textColor" red="0.1333333333" green="0.1333333333" blue="0.1333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BPe-uF-yBD">
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="UTv-OL-omZ"/>
+                    </constraints>
+                    <state key="normal" image="icon_enter"/>
+                    <connections>
+                        <action selector="detailPasseger:" destination="iN0-l3-epB" eventType="touchUpInside" id="aAB-yP-NdL"/>
+                    </connections>
+                </button>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="TV8-aw-MVh">
+                    <color key="backgroundColor" red="0.8784313725490196" green="0.88235294117647056" blue="0.88627450980392153" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="w3R-pI-713"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="f9O-xO-i9J" firstAttribute="top" secondItem="xd3-k5-ozm" secondAttribute="bottom" constant="5" id="0w7-oI-1V1"/>
+                <constraint firstAttribute="trailing" secondItem="BPe-uF-yBD" secondAttribute="trailing" constant="15" id="4GK-qu-Oj8"/>
+                <constraint firstItem="5qP-Sg-oGl" firstAttribute="centerY" secondItem="xd3-k5-ozm" secondAttribute="centerY" id="4GT-LH-caT"/>
+                <constraint firstItem="3B1-40-gWE" firstAttribute="leading" secondItem="aq8-hb-esM" secondAttribute="trailing" constant="5" id="6a6-Pe-SOt"/>
+                <constraint firstItem="ZPF-Vg-aM2" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="15" id="9N1-pn-YQ0"/>
+                <constraint firstAttribute="trailing" secondItem="TV8-aw-MVh" secondAttribute="trailing" id="DA9-00-hTz"/>
+                <constraint firstItem="f9O-xO-i9J" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="35" id="DSg-63-ioc"/>
+                <constraint firstItem="S6k-lR-SGf" firstAttribute="centerY" secondItem="f9O-xO-i9J" secondAttribute="centerY" id="EgM-hG-8Ou"/>
+                <constraint firstAttribute="bottom" secondItem="ZPF-Vg-aM2" secondAttribute="bottom" id="FH7-gH-bw9"/>
+                <constraint firstItem="aq8-hb-esM" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="35" id="GNU-Mp-VIj"/>
+                <constraint firstItem="5qP-Sg-oGl" firstAttribute="leading" secondItem="xd3-k5-ozm" secondAttribute="trailing" constant="5" id="Kii-tJ-yca"/>
+                <constraint firstItem="TV8-aw-MVh" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="UUc-e0-R59"/>
+                <constraint firstItem="S6k-lR-SGf" firstAttribute="leading" secondItem="f9O-xO-i9J" secondAttribute="trailing" constant="5" id="WN4-xd-Fk4"/>
+                <constraint firstItem="aq8-hb-esM" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="X7b-4T-WTy"/>
+                <constraint firstItem="ZPF-Vg-aM2" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="cZT-qt-hLj"/>
+                <constraint firstItem="xd3-k5-ozm" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="civ-ey-eN6"/>
+                <constraint firstItem="3B1-40-gWE" firstAttribute="bottom" secondItem="aq8-hb-esM" secondAttribute="bottom" id="fN2-ve-lbA"/>
+                <constraint firstItem="TV8-aw-MVh" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="hVi-6F-lsF"/>
+                <constraint firstAttribute="bottom" secondItem="BPe-uF-yBD" secondAttribute="bottom" id="kWQ-dO-3Dg"/>
+                <constraint firstItem="BPe-uF-yBD" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="rCY-d8-zcH"/>
+                <constraint firstItem="xd3-k5-ozm" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="35" id="usD-b2-FVf"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="approvalTipLabel" destination="xd3-k5-ozm" id="b93-IZ-LuR"/>
+                <outlet property="deleteButton" destination="ZPF-Vg-aM2" id="adZ-kE-Fdq"/>
+                <outlet property="departmentLabel" destination="3B1-40-gWE" id="6mg-0W-lMS"/>
+                <outlet property="departmentTipLabel" destination="f9O-xO-i9J" id="do2-Ih-dN1"/>
+                <outlet property="detailButton" destination="BPe-uF-yBD" id="DxG-Mj-1Zi"/>
+                <outlet property="nameLabel" destination="aq8-hb-esM" id="aIt-vv-6CR"/>
+                <outlet property="numberLabel" destination="5qP-Sg-oGl" id="Oag-Ne-aA0"/>
+                <outlet property="projectLabel" destination="S6k-lR-SGf" id="Trt-1r-t85"/>
+            </connections>
+            <point key="canvasLocation" x="542" y="200.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icon_enter" width="15" height="15"/>
+        <image name="icon_flight_delpersonal" width="15" height="15"/>
+    </resources>
+    <simulatedMetricsContainer key="defaultSimulatedMetrics">
+        <simulatedStatusBarMetrics key="statusBar"/>
+        <simulatedOrientationMetrics key="orientation"/>
+        <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
+    </simulatedMetricsContainer>
+</document>

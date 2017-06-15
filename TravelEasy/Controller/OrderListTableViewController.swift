@@ -50,6 +50,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.sizeToFit()
         tableView.tableHeaderView = searchController.searchBar
+        searchController.searchBar.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -215,11 +216,17 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
     func handleNotification(_ sender : Notification)  {
         if let tag = sender.object as? Int {
             if tag == 1 {
+                if searchController.isActive {
+                    return
+                }
                 if let row = sender.userInfo?["tag"] as? Int {
                     selectedRow = row
                     self.performSegue(withIdentifier: "toOrderDetail", sender: self)
                 }
             }else if tag == 2 {
+                if searchController.isActive {
+                    return
+                }
                 if let row = sender.userInfo?["tag"] as? Int {
                     selectedRow = row / 10
                     switch row % 10 {
@@ -322,7 +329,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId], encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: ["askOrderId" : askOrderId], encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
                 hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {

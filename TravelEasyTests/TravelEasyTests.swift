@@ -2,12 +2,11 @@
 //  TravelEasyTests.swift
 //  TravelEasyTests
 //
-//  Created by 张晓飞 on 16/8/5.
-//  Copyright © 2016年 张晓飞. All rights reserved.
+//  Created by 张晓飞 on 2017/6/15.
+//  Copyright © 2017年 张晓飞. All rights reserved.
 //
 
 import XCTest
-@testable import TravelEasy
 
 class TravelEasyTests: XCTestCase {
     
@@ -28,7 +27,7 @@ class TravelEasyTests: XCTestCase {
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
-        self.measureBlock {
+        self.measure {
             // Put the code you want to measure the time of here.
         }
     }

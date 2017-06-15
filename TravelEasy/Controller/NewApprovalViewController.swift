@@ -10,7 +10,7 @@ import UIKit
 import IQKeyboardManagerSwift
 import SwiftyJSON
 import MBProgressHUD
-import JLToast
+import Toaster
 
 
 class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate {
@@ -29,9 +29,9 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORHIGHLIGHT), forState: .Highlighted)
-        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORDISABLE), forState: .Disabled)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(NewApprovalViewController.handleNotification(_:)), name: "NewApprovalViewController", object: nil)
+        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORHIGHLIGHT), for: .highlighted)
+        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORDISABLE), for: .disabled)
+        NotificationCenter.default.addObserver(self, selector: #selector(NewApprovalViewController.handleNotification(_:)), name: NSNotification.Name(rawValue: "NewApprovalViewController"), object: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -40,10 +40,10 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    @IBAction func chooseDate(sender: AnyObject) {
+    @IBAction func chooseDate(_ sender: AnyObject) {
         reasonTextView.resignFirstResponder()
         cityTextField.resignFirstResponder()
         let button = sender as! UIButton
@@ -55,61 +55,61 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
         self.navigationController?.pushViewController(calender, animated: true)
     }
 
-    @IBAction func addTravelMan(sender: AnyObject) {
+    @IBAction func addTravelMan(_ sender: AnyObject) {
         reasonTextView.resignFirstResponder()
         cityTextField.resignFirstResponder()
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("AddressBook") as! AddressBookTableViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "AddressBook") as! AddressBookTableViewController
         controller.flag = 1
         self.navigationController?.pushViewController(controller, animated: true)
     }
     
-    @IBAction func submitApproval(sender: AnyObject) {
+    @IBAction func submitApproval(_ sender: AnyObject) {
         reasonTextView.resignFirstResponder()
         cityTextField.resignFirstResponder()
         let reason = reasonTextView.text
         let city = cityTextField.text
-        if reason.characters.count == 0 || reason.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count == 0 {
-            JLToast.makeText("请输入出差事由！").show()
+        if reason?.characters.count == 0 || reason?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).characters.count == 0 {
+            Toast(text: "请输入出差事由！").show()
             return
-        }else if city?.characters.count == 0 || city?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count == 0 {
-            JLToast.makeText("请输入出差地点！").show()
+        }else if city?.characters.count == 0 || city?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).characters.count == 0 {
+            Toast(text: "请输入出差地点！").show()
             return
         }else if goModel == nil {
-            JLToast.makeText("请选择起始日期！").show()
+            Toast(text: "请选择起始日期！").show()
             return
         }else if backModel == nil {
-            JLToast.makeText("请选择截止日期！").show()
+            Toast(text: "请选择截止日期！").show()
             return
         }else if arrTravel.count == 0 {
-            JLToast.makeText("请添加出差人！").show()
+            Toast(text: "请添加出差人！").show()
             return
         }
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
-            var dicParam : [String : AnyObject] = [:]
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : Any] {
+            var dicParam : [String : Any] = [:]
             dicParam["CorpId"] = info["CorpId"]
             dicParam["AskEmployeeId"] = info["EmployeeId"]
-            dicParam["TravelReason"] = reason
-            dicParam["TravelDateStart"] = goModel.toString()
-            dicParam["TravelDateEnd"] = backModel.toString()
-            dicParam["TravelDestination"] = city
+            dicParam["TravelReason"] = reason as AnyObject
+            dicParam["TravelDateStart"] = goModel.toString() as Any
+            dicParam["TravelDateEnd"] = backModel.toString() as Any
+            dicParam["TravelDestination"] = city as AnyObject
             dicParam["Employees"] = arrTravel.map{$0["EmployeeId"].intValue}
             let token = info["Token"] as! String
             let manager = URLCollection()
             let hud = showHUD()
             manager.postRequest(manager.createAskApproval, params: dicParam, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+                hud.hide(animated: true)
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
-                        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 3)
-                        let controller = self?.storyboard?.instantiateViewControllerWithIdentifier("OrderSuccess") as! OrderSuccessViewController
+                    if let code = json["Code"].int, code == 0 {
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "ApprovalListViewController"), object: 3)
+                        let controller = self?.storyboard?.instantiateViewController(withIdentifier: "OrderSuccess") as! OrderSuccessViewController
                         controller.intApproval = 1
                         controller.approvalId = json["AskApprovalId"].intValue
                         controller.flightInfo = JSON(["reason" : reason , "date" : "\(self!.goModel.toString())至\(self!.backModel.toString())" , "city" : city!])
                         self?.navigationController?.pushViewController(controller, animated: true)
                         if var viewControllers = self?.navigationController?.viewControllers {
-                            for (index , viewController) in  viewControllers.enumerate() {
+                            for (index , viewController) in  viewControllers.enumerated() {
                                 if viewController is NewApprovalViewController {
-                                    viewControllers.removeAtIndex(index)
+                                    viewControllers.remove(at: index)
                                     break
                                 }
                             }
@@ -118,11 +118,11 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
                         
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
             })
         }
@@ -130,7 +130,7 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
     }
     
     // 处理通知
-    func handleNotification(sender : NSNotification) {
+    func handleNotification(_ sender : Notification) {
         if let tag = sender.object as? Int {
             if tag == 1 {
                 let json = JSON(sender.userInfo!["json"]!)
@@ -140,24 +140,24 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
                     }
                 }
                 arrTravel.append(json)
-                let travelView = NSBundle.mainBundle().loadNibNamed("TravelManView", owner: nil, options: nil)!.last as! TravelManView
+                let travelView = Bundle.main.loadNibNamed("TravelManView", owner: nil, options: nil)!.last as! TravelManView
                 travelView.translatesAutoresizingMaskIntoConstraints = false
                 travelManView.addSubview(travelView)
                 travelView.tag = arrTravel.count
-                travelManView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[travelView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["travelView" : travelView]))
-                travelManView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-(spacing)-[travelView(45)]", options: .DirectionLeadingToTrailing, metrics: ["spacing" : 30 + 45 * (arrTravel.count - 1)], views: ["travelView" : travelView]))
+                travelManView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[travelView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["travelView" : travelView]))
+                travelManView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(spacing)-[travelView(45)]", options: NSLayoutFormatOptions(), metrics: ["spacing" : 30 + 45 * (arrTravel.count - 1)], views: ["travelView" : travelView]))
                 travelManViewHeightLConstraint.constant = 30 + 45 * CGFloat(arrTravel.count)
                 travelView.nameLabel.text = json["EmployeeName"].string
                 travelView.departmentLabel.text = json["DepartmentName"].string
                 
             }else if tag == 2 {
                 let tag = sender.userInfo!["tag"] as! Int
-                let alertController = UIAlertController(title: "提示", message: "您确定要删除该乘机人", preferredStyle: .Alert)
-                alertController.addAction(UIAlertAction(title: "取消", style: .Cancel, handler: { (action) in
+                let alertController = UIAlertController(title: "提示", message: "您确定要删除该乘机人", preferredStyle: .alert)
+                alertController.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
                     
                 }))
-                alertController.addAction(UIAlertAction(title: "确定", style: .Default, handler: {[weak self] (action) in
-                    self?.arrTravel.removeAtIndex(tag - 1)
+                alertController.addAction(UIAlertAction(title: "确定", style: .default, handler: {[weak self] (action) in
+                    self?.arrTravel.remove(at: tag - 1)
                     if let travelView = self?.travelManView.viewWithTag(tag) as? TravelManView {
                         travelView.removeFromSuperview()
                     }
@@ -176,7 +176,7 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
                     }
                     self?.travelManViewHeightLConstraint.constant -= 45
                     }))
-                self.presentViewController(alertController, animated: true, completion: {
+                self.present(alertController, animated: true, completion: {
                     
                 })
             }
@@ -194,7 +194,7 @@ class NewApprovalViewController: UIViewController , XZCalendarControllerDelegate
     
     // MARK : - Delegate
     
-    func xzCalendarControllerWithModel(model: XZCalendarModel!) {
+    func xzCalendarController(with model: XZCalendarModel!) {
         if selectedDateFlag > 0 {
             backDateLabel.text = model.toString()
             backModel = model

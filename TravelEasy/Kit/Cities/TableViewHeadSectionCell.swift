@@ -17,73 +17,73 @@ class TableViewHeadSectionCell: UITableViewCell,UICollectionViewDelegate,UIColle
     }
 
     @IBOutlet weak var collectionView: UICollectionView!
-    private var data : [[String : AnyObject]] = []
+    fileprivate var data : [[String : AnyObject]] = []
     
-    func addData(data:[[String : AnyObject]],city:(city:[String : AnyObject])->Void){
+    func addData(_ data:[[String : AnyObject]],city:@escaping (_ city:[String : AnyObject])->Void){
         self.data = data
         self.action = city
     }
     
     func reloadData(){
-        let nib = UINib(nibName: "CollectionViewCell", bundle: NSBundle.mainBundle())
-        collectionView.registerNib(nib, forCellWithReuseIdentifier: "cell")
+        let nib = UINib(nibName: "CollectionViewCell", bundle: Bundle.main)
+        collectionView.register(nib, forCellWithReuseIdentifier: "cell")
         self.collectionView.reloadData()
     }
     
      ////////////////////  UICollectionViewDataSource   ////////////////////
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int{
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int{
         return data.count;
     }
     
    
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell{
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell{
 
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("cell", forIndexPath: indexPath) as! CollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CollectionViewCell
         cell.addData(self.data[indexPath.row])
         cell.layer.cornerRadius = 3
         cell.layer.borderWidth = 1
-        cell.layer.borderColor = UIColor.hexStringToColor("e0e1e2").CGColor
+        cell.layer.borderColor = UIColor.hexStringToColor("e0e1e2").cgColor
         return cell;
     }
     
     ////////////////////  UICollectionViewDelegateFlowLayout   ////////////////////
     
     /** 每一个cell的大小 **/
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
     {
-        let width = UIScreen.mainScreen().bounds.size.width
+        let width = UIScreen.main.bounds.size.width
         let itemWidth = (width - 68) / 3
         let itemHeight = itemWidth * 50 / 168
-        return CGSizeMake(itemWidth , itemHeight)
+        return CGSize(width: itemWidth , height: itemHeight)
     }
     
     /** 设置每组的cell的边界 **/
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAtIndex section: Int) -> UIEdgeInsets
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets
     {
         return UIEdgeInsetsMake(15, 15, 15, 15)
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAtIndex section: Int) -> CGFloat {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 10
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAtIndex section: Int) -> CGFloat {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 10
     }
     
      ////////////////////  UICollectionViewDelegate   ////////////////////
-    func collectionView(collectionView: UICollectionView, didHighlightItemAtIndexPath indexPath: NSIndexPath) {
-        let cell = collectionView.cellForItemAtIndexPath(indexPath) as! CollectionViewCell
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as! CollectionViewCell
         cell.backgroundColor = UIColor.hexStringToColor("e0e1e2")
     }
     
-    func collectionView(collectionView: UICollectionView, didUnhighlightItemAtIndexPath indexPath: NSIndexPath) {
-        let cell = collectionView.cellForItemAtIndexPath(indexPath) as! CollectionViewCell
-        cell.backgroundColor = UIColor.whiteColor()
+    func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as! CollectionViewCell
+        cell.backgroundColor = UIColor.white
     }
     
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let city : [String : AnyObject] = data[indexPath.row]
         self.action(city)
 

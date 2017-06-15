@@ -9,7 +9,7 @@
 import UIKit
 import MBProgressHUD
 import SwiftyJSON
-import JLToast
+import Toaster
 
 class OrderSuccessViewController: UIViewController {
 
@@ -32,16 +32,16 @@ class OrderSuccessViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        continueButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        continueButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        continueButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        showButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        showButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        showButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
+        continueButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        continueButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        continueButton.setTitleColor(UIColor.white, for: .highlighted)
+        showButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        showButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        showButton.setTitleColor(UIColor.white, for: .highlighted)
         if intApproval == 1 {
             self.title = "提交成功"
-            continueButton.setTitle("继续申请", forState: .Normal)
-            showButton.setTitle("查看申请", forState: .Normal)
+            continueButton.setTitle("继续申请", for: UIControlState())
+            showButton.setTitle("查看申请", for: UIControlState())
             toAndFromCityLabel.text = flightInfo["reason"].stringValue
             goDateAndAirportLabel.text = flightInfo["date"].stringValue
             passengersLabel.text = flightInfo["city"].stringValue
@@ -54,8 +54,8 @@ class OrderSuccessViewController: UIViewController {
             tipThreeLabel.textColor = UIColor.hexStringToColor(TEXTCOLOR)
         }else if intApproval == 2 {
             self.title = "代办值机"
-            continueButton.setTitle("订单列表", forState: .Normal)
-            showButton.setTitle("查看详情", forState: .Normal)
+            continueButton.setTitle("订单列表", for: UIControlState())
+            showButton.setTitle("查看详情", for: UIControlState())
             tipOneLabel.text = "代办值机提交成功！"
             tipTwoLabel.text = nil
             tipThreeLabel.text = "我们将尽快处理。"
@@ -80,36 +80,36 @@ class OrderSuccessViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    @IBAction func backToTopViewController(sender: AnyObject) {
-        self.navigationController?.popToRootViewControllerAnimated(true)
+    @IBAction func backToTopViewController(_ sender: AnyObject) {
+        self.navigationController?.popToRootViewController(animated: true)
     }
     
-    @IBAction func continueOrdering(sender: AnyObject) {
+    @IBAction func continueOrdering(_ sender: AnyObject) {
         if intApproval == 1 {
-            let controller = self.storyboard?.instantiateViewControllerWithIdentifier("NewApproval") as! NewApprovalViewController
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "NewApproval") as! NewApprovalViewController
             self.navigationController?.pushViewController(controller, animated: true)
             
             if var viewControllers = self.navigationController?.viewControllers {
-                for (index , viewController) in  viewControllers.enumerate() {
+                for (index , viewController) in  viewControllers.enumerated() {
                     if viewController is OrderSuccessViewController {
-                        viewControllers.removeAtIndex(index)
+                        viewControllers.remove(at: index)
                         break
                     }
                 }
                 self.navigationController?.viewControllers = viewControllers
             }
         }else{
-            self.navigationController?.popToRootViewControllerAnimated(true)
+            self.navigationController?.popToRootViewController(animated: true)
         }
         
     }
 
-    @IBAction func lookForOrderDetail(sender: AnyObject) {
+    @IBAction func lookForOrderDetail(_ sender: AnyObject) {
         if intApproval == 1 {
-            self.navigationController?.popToRootViewControllerAnimated(true)
+            self.navigationController?.popToRootViewController(animated: true)
         }else{
-            NSNotificationCenter.defaultCenter().postNotificationName("MTabBarViewController", object: 3)
-            self.navigationController?.popToRootViewControllerAnimated(true)
+            NotificationCenter.default.post(name: Notification.Name(rawValue: "MTabBarViewController"), object: 3)
+            self.navigationController?.popToRootViewController(animated: true)
         }
     }
     

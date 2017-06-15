@@ -7,7 +7,8 @@
 //
 
 import UIKit
-import JLToast
+import Toaster
+import Alamofire
 
 class ModifyPwdViewController: UIViewController {
 
@@ -25,53 +26,53 @@ class ModifyPwdViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func showPwd(sender: AnyObject) {
+    @IBAction func showPwd(_ sender: AnyObject) {
         let button = sender as! UIButton
         switch button.tag {
         case 1:
-            tfOldPwd.secureTextEntry = button.selected
+            tfOldPwd.isSecureTextEntry = button.isSelected
         case 2:
-            tfNewPwd.secureTextEntry = button.selected
+            tfNewPwd.isSecureTextEntry = button.isSelected
         default:
-            tfReNewPwd.secureTextEntry = button.selected
+            tfReNewPwd.isSecureTextEntry = button.isSelected
         }
-        button.selected = !button.selected
+        button.isSelected = !button.isSelected
     }
 
-    @IBAction func modifyPwd(sender: AnyObject) {
+    @IBAction func modifyPwd(_ sender: AnyObject) {
         tfOldPwd.resignFirstResponder()
         tfNewPwd.resignFirstResponder()
         tfReNewPwd.resignFirstResponder()
-        if let oldPwd = tfOldPwd.text where oldPwd.characters.count > 0 {
-            if let newPwd = tfNewPwd.text where newPwd.characters.count > 0 {
-                if let renewPwd = tfReNewPwd.text where newPwd == renewPwd {
+        if let oldPwd = tfOldPwd.text, oldPwd.characters.count > 0 {
+            if let newPwd = tfNewPwd.text, newPwd.characters.count > 0 {
+                if let renewPwd = tfReNewPwd.text, newPwd == renewPwd {
                     let manager = URLCollection()
                     let hud = self.showHUD()
                     if let token = manager.validateToken(){
-                        manager.postRequest(manager.ChangePassword, params: ["oldPassword" : oldPwd , "newPassword" : newPwd], encoding: .URLEncodedInURL , headers: ["Token" : token], callback: { (json, error) in
-                            hud.hideAnimated(true)
+                        manager.postRequest(manager.ChangePassword, params: ["oldPassword" : oldPwd , "newPassword" : newPwd], encoding: URLEncoding.default , headers: ["Token" : token], callback: { (json, error) in
+                            hud.hide(animated: true)
                             if let jsonObject = json {
                                 if jsonObject["Code"].int == 0 {
-                                    JLToast.makeText("成功修改密码").show()
-                                    self.navigationController?.popViewControllerAnimated(true)
+                                    Toast(text: "成功修改密码").show()
+                                    self.navigationController?.popViewController(animated: true)
                                 }else{
                                     if let message = jsonObject["Message"].string {
-                                        JLToast.makeText(message).show()
+                                        Toast(text: message).show()
                                     }
                                 }
                             }else{
-                                JLToast.makeText("网络故障，请检查网络").show()
+                                Toast(text: "网络故障，请检查网络").show()
                             }
                         })
                     }
                 }else{
-                    JLToast.makeText("二次密码不一致").show()
+                    Toast(text: "二次密码不一致").show()
                 }
             }else{
-                JLToast.makeText("新密码不能为空").show()
+                Toast(text: "新密码不能为空").show()
             }
         }else{
-            JLToast.makeText("旧密码不能为空").show()
+            Toast(text: "旧密码不能为空").show()
         }
     }
     /*

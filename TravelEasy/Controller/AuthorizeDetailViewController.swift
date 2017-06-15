@@ -9,7 +9,8 @@
 import UIKit
 import MBProgressHUD
 import SwiftyJSON
-import JLToast
+import Toaster
+import Alamofire
 
 class AuthorizeDetailViewController: UIViewController {
     
@@ -37,11 +38,11 @@ class AuthorizeDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        agreeButton.setBackgroundImage(UIImage.imageWithColor(BUTTONBGCOLORHIGHLIGHT), forState: .Highlighted)
-        refuseButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        refuseButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        refuseButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        refuseButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
+        agreeButton.setBackgroundImage(UIImage.imageWithColor(BUTTONBGCOLORHIGHLIGHT), for: .highlighted)
+        refuseButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        refuseButton.setTitleColor(UIColor.white, for: .highlighted)
+        refuseButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        refuseButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
         getAuthorizeDetail()
     }
 
@@ -55,18 +56,18 @@ class AuthorizeDetailViewController: UIViewController {
         let hud = showHUD()
         if let token = manager.validateToken() {
             manager.getRequest(manager.getAuthorizeDetail, params: ["authorizeId" : authorizeId], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.authorizeDetail = model["AuthorizeDetail"]
                         self?.refreshView()
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
@@ -74,28 +75,28 @@ class AuthorizeDetailViewController: UIViewController {
     
     func refreshView() {
         statusLabel.text = authorizeDetail["Status"].string
-        if let status = authorizeDetail["Status"].string where status == "待授权" {
-            toolView.hidden = false
+        if let status = authorizeDetail["Status"].string, status == "待授权" {
+            toolView.isHidden = false
         }
         cityLabel.text = authorizeDetail["FlightOrder" , "Route" , "Departure" , "CityName"].stringValue + "-" + authorizeDetail["FlightOrder" , "Route" , "Arrival" , "CityName"].stringValue
         discountLabel.text = "\(Float(authorizeDetail["FlightOrder" , "Route" , "Discount"].intValue) / 10)折\(authorizeDetail["FlightOrder" , "Route" ,"BunkName"].stringValue)"
         priceLabel.text = "¥\(authorizeDetail["FlightOrder" , "FeeInfo" , "PaymentAmount"].intValue)"
-        let departureDateTime = authorizeDetail["FlightOrder" , "Route" , "Departure" , "DateTime"].stringValue.componentsSeparatedByString(" ")
+        let departureDateTime = authorizeDetail["FlightOrder" , "Route" , "Departure" , "DateTime"].stringValue.components(separatedBy: " ")
         if departureDateTime.count == 2 {
             goTimeLabel.text = departureDateTime[1]
-            let time = departureDateTime[0].componentsSeparatedByString("-").map{UInt($0)}
+            let time = departureDateTime[0].components(separatedBy: "-").map{UInt($0)}
             if time.count == 3 {
-                let calender = XZCalendarModel.calendarDayWithYear(time[0]!, month: time[1]!, day: time[2]!)
-                goDateLabel.text = "\(calender.month > 10 ? "\(calender.month)" : "0\(calender.month)")月\(calender.day > 10 ? "\(calender.day)" : "0\(calender.day)")日\(calender.getWeek())"
+                let calender = XZCalendarModel.calendarDay(withYear: time[0]!, month: time[1]!, day: time[2]!)
+                goDateLabel.text = "\((calender?.month)! > 10 ? "\(calender?.month)" : "0\(calender?.month)")月\((calender?.day)! > 10 ? "\(calender?.day)" : "0\(calender?.day)")日\(calender?.getWeek()!)"
             }
         }
-        let ArrivalDateTime = authorizeDetail["FlightOrder" , "Route" , "Arrival" , "DateTime"].stringValue.componentsSeparatedByString(" ")
+        let ArrivalDateTime = authorizeDetail["FlightOrder" , "Route" , "Arrival" , "DateTime"].stringValue.components(separatedBy: " ")
         if ArrivalDateTime.count == 2 {
             backTimeLabel.text = ArrivalDateTime[1]
-            let time = ArrivalDateTime[0].componentsSeparatedByString("-").map{UInt($0)}
+            let time = ArrivalDateTime[0].components(separatedBy: "-").map{UInt($0)}
             if time.count == 3 {
-                let calender = XZCalendarModel.calendarDayWithYear(time[0]!, month: time[1]!, day: time[2]!)
-                backDateLabel.text = "\(calender.month > 10 ? "\(calender.month)" : "0\(calender.month)")月\(calender.day > 10 ? "\(calender.day)" : "0\(calender.day)")日\(calender.getWeek())"
+                let calender = XZCalendarModel.calendarDay(withYear: time[0]!, month: time[1]!, day: time[2]!)
+                backDateLabel.text = "\((calender?.month)! > 10 ? "\(calender?.month)" : "0\(calender?.month)")月\((calender?.day)! > 10 ? "\(calender?.day)" : "0\(calender?.day)")日\(calender?.getWeek()!)"
             }
         }
         goAirportLabel.text = "\(authorizeDetail["FlightOrder" , "Route" , "Departure" , "AirportName"].stringValue)机场\(authorizeDetail["FlightOrder" , "Route" , "Departure" , "Terminal"].stringValue)"
@@ -151,15 +152,15 @@ class AuthorizeDetailViewController: UIViewController {
         attributeText.addAttributes([NSParagraphStyleAttributeName : style], range: NSMakeRange(0, attributeText.length))
         warningLabel.attributedText = attributeText
         
-        let approvalHisView = NSBundle.mainBundle().loadNibNamed("ApprovalHisView", owner: nil, options: nil)!.last as! ApprovalHisView
+        let approvalHisView = Bundle.main.loadNibNamed("ApprovalHisView", owner: nil, options: nil)!.last as! ApprovalHisView
         approvalHisView.translatesAutoresizingMaskIntoConstraints = false
         authorizedView.addSubview(approvalHisView)
-        authorizedView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[approvalHisView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["approvalHisView" : approvalHisView]))
-        authorizedView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-(spacing)-[approvalHisView(65)]", options: .DirectionLeadingToTrailing, metrics: ["spacing" : 0], views: ["approvalHisView" : approvalHisView]))
+        authorizedView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[approvalHisView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["approvalHisView" : approvalHisView]))
+        authorizedView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(spacing)-[approvalHisView(65)]", options: NSLayoutFormatOptions(), metrics: ["spacing" : 0], views: ["approvalHisView" : approvalHisView]))
         
         approvalHisView.nameLabel.text = authorizeDetail["AuditEmployeeName"].stringValue.characters.count > 0 ? authorizeDetail["AuditEmployeeName"].stringValue : authorizeDetail["AuditPositionEmployeeNames"].stringValue
         approvalHisView.departmentLabel.text = authorizeDetail["AuditPositionName"].stringValue
-        if let auditOpinion = authorizeDetail["AuditOpinion"].string where auditOpinion.characters.count > 0 {
+        if let auditOpinion = authorizeDetail["AuditOpinion"].string, auditOpinion.characters.count > 0 {
             approvalHisView.statucLabel.text = authorizeDetail["Status"].stringValue + "(\(auditOpinion))"
         }else{
             approvalHisView.statucLabel.text = authorizeDetail["Status"].stringValue
@@ -167,7 +168,7 @@ class AuthorizeDetailViewController: UIViewController {
         
         approvalHisView.timeLabel.text = authorizeDetail["AuditDate"].stringValue
 
-        approvalHisView.lineImageView.hidden = true
+        approvalHisView.lineImageView.isHidden = true
 
         if let status = authorizeDetail["Status"].string {
             if status == "待授权" {
@@ -184,36 +185,36 @@ class AuthorizeDetailViewController: UIViewController {
         authorizedViewHeightLConstraint.constant = 65
     }
 
-    @IBAction func agreeOrder(sender: AnyObject) {
+    @IBAction func agreeOrder(_ sender: AnyObject) {
         handleEvent(true)
     }
     
-    @IBAction func cancelOrder(sender: AnyObject) {
+    @IBAction func cancelOrder(_ sender: AnyObject) {
         handleEvent(false)
     }
     
-    func handleEvent(isAgree : Bool) {
+    func handleEvent(_ isAgree : Bool) {
         let hud = showHUD()
         let manager = URLCollection()
         if let token = manager.validateToken() {
             var urlString = ""
-            var params : [String : AnyObject] = [:]
+            var params : [String : Any] = [:]
             urlString = isAgree ? manager.auditPassAuthorize : manager.auditRejectAuthorize
             params["AuthorizeId"] = authorizeId
             
-            manager.postRequest(urlString, params: params , encoding : .URLEncodedInURL , headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(urlString, params: params , encoding : URLEncoding.default , headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
-                        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 3)
-                        self?.navigationController?.popViewControllerAnimated(true)
+                    if let code = json["Code"].int, code == 0 {
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "ApprovalListViewController"), object: 3)
+                        self?.navigationController?.popViewController(animated: true)
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
                 })
         }

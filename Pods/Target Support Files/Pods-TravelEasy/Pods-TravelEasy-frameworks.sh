@@ -91,24 +91,26 @@ strip_invalid_archs() {
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "$BUILT_PRODUCTS_DIR/Alamofire/Alamofire.framework"
   install_framework "$BUILT_PRODUCTS_DIR/IQKeyboardManagerSwift/IQKeyboardManagerSwift.framework"
-  install_framework "$BUILT_PRODUCTS_DIR/JLToast/JLToast.framework"
   install_framework "$BUILT_PRODUCTS_DIR/MBProgressHUD/MBProgressHUD.framework"
   install_framework "$BUILT_PRODUCTS_DIR/MJRefresh/MJRefresh.framework"
+  install_framework "$BUILT_PRODUCTS_DIR/ObjcExceptionBridging/ObjcExceptionBridging.framework"
   install_framework "$BUILT_PRODUCTS_DIR/PopupDialog/PopupDialog.framework"
   install_framework "$BUILT_PRODUCTS_DIR/SwiftyJSON/SwiftyJSON.framework"
   install_framework "$BUILT_PRODUCTS_DIR/TZStackView/TZStackView.framework"
+  install_framework "$BUILT_PRODUCTS_DIR/Toaster/Toaster.framework"
   install_framework "$BUILT_PRODUCTS_DIR/UIViewController+NavigationBar/UIViewController_NavigationBar.framework"
   install_framework "$BUILT_PRODUCTS_DIR/XCGLogger/XCGLogger.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "$BUILT_PRODUCTS_DIR/Alamofire/Alamofire.framework"
   install_framework "$BUILT_PRODUCTS_DIR/IQKeyboardManagerSwift/IQKeyboardManagerSwift.framework"
-  install_framework "$BUILT_PRODUCTS_DIR/JLToast/JLToast.framework"
   install_framework "$BUILT_PRODUCTS_DIR/MBProgressHUD/MBProgressHUD.framework"
   install_framework "$BUILT_PRODUCTS_DIR/MJRefresh/MJRefresh.framework"
+  install_framework "$BUILT_PRODUCTS_DIR/ObjcExceptionBridging/ObjcExceptionBridging.framework"
   install_framework "$BUILT_PRODUCTS_DIR/PopupDialog/PopupDialog.framework"
   install_framework "$BUILT_PRODUCTS_DIR/SwiftyJSON/SwiftyJSON.framework"
   install_framework "$BUILT_PRODUCTS_DIR/TZStackView/TZStackView.framework"
+  install_framework "$BUILT_PRODUCTS_DIR/Toaster/Toaster.framework"
   install_framework "$BUILT_PRODUCTS_DIR/UIViewController+NavigationBar/UIViewController_NavigationBar.framework"
   install_framework "$BUILT_PRODUCTS_DIR/XCGLogger/XCGLogger.framework"
 fi

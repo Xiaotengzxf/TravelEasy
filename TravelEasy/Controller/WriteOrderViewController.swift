@@ -8,9 +8,10 @@
 
 import UIKit
 import SwiftyJSON
-import JLToast
+import Toaster
 import MBProgressHUD
 import PopupDialog
+import Alamofire
 
 class WriteOrderViewController: UIViewController {
 
@@ -20,10 +21,10 @@ class WriteOrderViewController: UIViewController {
     var dicBackTravelSelected : [Int : Int]! // 返选中的原因
     var flightInfo : JSON! // 航程信息
     var backFlightInfo : JSON! // 返程信息
-    var indexPath : NSIndexPath! // 索引
-    var backIndexPath : NSIndexPath! // 返航索引
-    var goDate : NSDate!
-    var backDate : NSDate!
+    var indexPath : IndexPath! // 索引
+    var backIndexPath : IndexPath! // 返航索引
+    var goDate : Date!
+    var backDate : Date!
     var fee = 0
     var airportFee = 0
     var oilFee = 0
@@ -86,10 +87,10 @@ class WriteOrderViewController: UIViewController {
         super.viewDidLoad()
         if flag != 1 {
             if indexPath != nil {
-                indexPath = NSIndexPath(forRow: 0, inSection: indexPath.section)
+                indexPath = IndexPath(row: 0, section: indexPath.section)
             }
             if backIndexPath != nil {
-                backIndexPath = NSIndexPath(forRow: 0, inSection: backIndexPath.section)
+                backIndexPath = IndexPath(row: 0, section: backIndexPath.section)
             }
             
         }
@@ -115,16 +116,16 @@ class WriteOrderViewController: UIViewController {
         feeLabel.attributedText = attributeString
         
         if backIndexPath != nil {
-            goImageView.hidden = false
-            backImageView.hidden = false
+            goImageView.isHidden = false
+            backImageView.isHidden = false
             let backDateString = dateToString(backDate)
             let bunkName = backFlightInfo["Bunks" , backIndexPath.row , "BunkName"].stringValue
             backDateAndBunkLabel.text = "\(backDateString) \(bunkName)"
             backAirportLabel.text = "\(backFlightInfo["Departure" , "AirportName"].stringValue)机场\(backFlightInfo["Departure" , "Terminal"].stringValue)-\(backFlightInfo["Arrival" , "AirportName"].stringValue)机场\(backFlightInfo ["Arrival" , "Terminal"].stringValue)"
         }else{
-            backImageView.hidden = true
+            backImageView.isHidden = true
         }
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             contacterTextfield.text = info["EmployeeName"] as? String
             mobileTextfield.text = info["Mobile"] as? String
             email = info["Email"] as? String ?? ""
@@ -133,30 +134,30 @@ class WriteOrderViewController: UIViewController {
             approvalRequired = info["ApprovalRequired"] as? Bool ?? false
             isProjectRequired = info["IsProjectRequired"] as? Bool ?? false
             if airInsuranceRequired {
-                accidentButton.selected = true
-                accidentButton.userInteractionEnabled = false
+                accidentButton.isSelected = true
+                accidentButton.isUserInteractionEnabled = false
             }
             if flag != 1 {
                 canBookingForOthers = info["CanBookingForOthers"] as? Bool ?? false
                 if !canBookingForOthers {
-                    addPassengerButton.hidden = true
+                    addPassengerButton.isHidden = true
                     getEmployeeInfo(info["EmployeeId"] as! Int)
                 }
             }
         }
         if flag == 1 {
-            addPassengerButton.hidden = true
-            payWayView.hidden = true
-            billTipView.hidden = true
+            addPassengerButton.isHidden = true
+            payWayView.isHidden = true
+            billTipView.isHidden = true
             addPassenger(travelPolicy)
-            submitButton.setTitle("确认改签", forState: .Normal)
+            submitButton.setTitle("确认改签", for: UIControlState())
             ticketPriceLabel.text = "机票差价"
             accidentViewBottomConstraint.constant = -44
         }else{
             setTotalMoney()
         }
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(WriteOrderViewController.handleNotification(_:)), name: "WriteOrderViewController", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(WriteOrderViewController.handleNotification(_:)), name: NSNotification.Name(rawValue: "WriteOrderViewController"), object: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -164,10 +165,10 @@ class WriteOrderViewController: UIViewController {
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    func handleNotification(sender : NSNotification) {
+    func handleNotification(_ sender : Notification) {
         if let tag = sender.object as? Int {
             if tag == 1 {
                 let json = JSON(sender.userInfo!)
@@ -192,7 +193,7 @@ class WriteOrderViewController: UIViewController {
                 }
             }else if tag == 2 {
                 let tag = sender.userInfo!["tag"] as! Int
-                let controller = self.storyboard?.instantiateViewControllerWithIdentifier("EditEmployee") as! EditEmployeeViewController
+                let controller = self.storyboard?.instantiateViewController(withIdentifier: "EditEmployee") as! EditEmployeeViewController
                 controller.employee = arrEmployee[tag - 1]
                 controller.flightInfo = flightInfo
                 controller.isEdit = true
@@ -200,12 +201,12 @@ class WriteOrderViewController: UIViewController {
                 self.navigationController?.pushViewController(controller, animated: true)
             }else if tag == 3 {
                 let tag = sender.userInfo!["tag"] as! Int
-                let alertController = UIAlertController(title: "提示", message: "您确定要删除该乘机人", preferredStyle: .Alert)
-                alertController.addAction(UIAlertAction(title: "取消", style: .Cancel, handler: { (action) in
+                let alertController = UIAlertController(title: "提示", message: "您确定要删除该乘机人", preferredStyle: .alert)
+                alertController.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
                     
                 }))
-                alertController.addAction(UIAlertAction(title: "确定", style: .Default, handler: {[weak self] (action) in
-                    self?.arrEmployee.removeAtIndex(tag - 1)
+                alertController.addAction(UIAlertAction(title: "确定", style: .default, handler: {[weak self] (action) in
+                    self?.arrEmployee.remove(at: tag - 1)
                     if let passengerView = self?.passengersView.viewWithTag(tag) as? PassengerView {
                         passengerView.removeFromSuperview()
                     }
@@ -224,7 +225,7 @@ class WriteOrderViewController: UIViewController {
                     }
                     self?.passengersViewHeightLConstraint.constant -= 75
                 }))
-                self.presentViewController(alertController, animated: true, completion: { 
+                self.present(alertController, animated: true, completion: { 
                     
                 })
             }
@@ -232,38 +233,38 @@ class WriteOrderViewController: UIViewController {
     }
     
     // 添加乘机人
-    func addPassenger(json : JSON)  {
+    func addPassenger(_ json : JSON)  {
         if arrEmployee.count > 0 {
             let name = getPassengerName(json)
             if name.characters.count > 0 {
                 for employee in arrEmployee {
                     let employeename = getPassengerName(employee)
                     if name == employeename {
-                        JLToast.makeText("不可以重复添加乘机人").show()
+                        Toast(text: "不可以重复添加乘机人").show()
                         return
                     }
                 }
             }
         }
         arrEmployee.append(json)
-        let passengerView = NSBundle.mainBundle().loadNibNamed("PassengerView", owner: nil, options: nil)!.last as! PassengerView
+        let passengerView = Bundle.main.loadNibNamed("PassengerView", owner: nil, options: nil)!.last as! PassengerView
         passengerView.translatesAutoresizingMaskIntoConstraints = false
         passengersView.addSubview(passengerView)
         passengerView.tag = arrEmployee.count
-        passengersView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[passengerView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["passengerView" : passengerView]))
-        passengersView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-(spacing)-[passengerView(75)]", options: .DirectionLeadingToTrailing, metrics: ["spacing" : 30 + (arrEmployee.count - 1) * 75], views: ["passengerView" : passengerView]))
+        passengersView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[passengerView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["passengerView" : passengerView]))
+        passengersView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(spacing)-[passengerView(75)]", options: NSLayoutFormatOptions(), metrics: ["spacing" : 30 + (arrEmployee.count - 1) * 75], views: ["passengerView" : passengerView]))
         
         assignDataForPassengerView(passengerView, json: json)
     }
     
-    func getPassengerName(json : JSON) -> String {
+    func getPassengerName(_ json : JSON) -> String {
         if flag == 1 {
             return ""
         }else{
             if canBookingForOthers == false {
                 return ""
             }else{
-                if let isUser = json["isUser"].bool where isUser {
+                if let isUser = json["isUser"].bool, isUser {
                     return json["employee" , "Name"].stringValue
                 }else{
                     return json["employee" , "EmployeeName"].stringValue
@@ -272,22 +273,22 @@ class WriteOrderViewController: UIViewController {
         }
     }
     
-    func assignDataForPassengerView(passengerView : PassengerView , json : JSON) {
+    func assignDataForPassengerView(_ passengerView : PassengerView , json : JSON) {
         if flag == 1 {
             passengerView.nameLabel.text = json["PassengerName"].string
-            passengerView.deleteButton.hidden = true
-            passengerView.detailButton.hidden = true
-            passengerView.approvalTipLabel.hidden = true
-            passengerView.departmentTipLabel.hidden = true
+            passengerView.deleteButton.isHidden = true
+            passengerView.detailButton.isHidden = true
+            passengerView.approvalTipLabel.isHidden = true
+            passengerView.departmentTipLabel.isHidden = true
         }else{
             if canBookingForOthers == false {
                 passengerView.nameLabel.text = json["EmployeeName"].string
                 passengerView.departmentLabel.text = json["DepartmentName"].string
                 passengerView.numberLabel.text = isGreenChannel ? "无" : (approvalRequired ? json["approval" , "ApprovalNo"].string : "无")
                 passengerView.projectLabel.text = isProjectRequired ? json["project" , "ProjectName"].string : "无"
-                passengerView.deleteButton.hidden = true
+                passengerView.deleteButton.isHidden = true
             }else{
-                if let isUser = json["isUser"].bool where isUser {
+                if let isUser = json["isUser"].bool, isUser {
                     passengerView.nameLabel.text = json["employee" , "Name"].string
                     passengerView.departmentLabel.text = json["employee" , "BelongedDepartmentName"].string
                 }else{
@@ -305,33 +306,33 @@ class WriteOrderViewController: UIViewController {
     
     func setTotalMoney()  {
         let factPrice = flag == 1 ? travelPolicy["FactTicketPrice"].intValue : 0
-        let extraFee = flag == 1 ? 0 : (airportFee + oilFee + ((accidentButton.selected ? accidentFee : 0) + delayFee))
+        let extraFee = flag == 1 ? 0 : (airportFee + oilFee + ((accidentButton.isSelected ? accidentFee : 0) + delayFee))
         totalMoneyLabel.text = "¥\((fee + extraFee) * arrEmployee.count - factPrice)"
         singleFeeLabel.attributedText = setAttributeText("¥\(fee - factPrice)×\(arrEmployee.count)人")
         if airportFee <= 0 || flag == 1 {
-            airportFeeLabel.hidden = true
-            airportFeeTipLabel.hidden = true
+            airportFeeLabel.isHidden = true
+            airportFeeTipLabel.isHidden = true
             airportFeeLabel.attributedText = nil
             airportFeeTipLabel.text = nil
             airportFeeTipTopLConstraint.constant = 0
         }else{
             bottomDetailCount += 1
-            airportFeeLabel.hidden = false
-            airportFeeTipLabel.hidden = false
+            airportFeeLabel.isHidden = false
+            airportFeeTipLabel.isHidden = false
             airportFeeLabel.attributedText = setAttributeText("¥\(airportFee)×\(arrEmployee.count)人")
             airportFeeTipLabel.text = "机建"
             airportFeeTipTopLConstraint.constant = 10
         }
         if oilFee <= 0 || flag == 1 {
-            oilFeeTipLabel.hidden = true
-            oilFeeLabel.hidden = true
+            oilFeeTipLabel.isHidden = true
+            oilFeeLabel.isHidden = true
             oilFeeTipLabel.text = nil
             oilFeeLabel.attributedText = nil
             oilFeeTipTopLConstraint.constant = 0
         }else{
             bottomDetailCount += 1
-            oilFeeTipLabel.hidden = false
-            oilFeeLabel.hidden = false
+            oilFeeTipLabel.isHidden = false
+            oilFeeLabel.isHidden = false
             oilFeeTipLabel.text = "燃油"
             oilFeeLabel.attributedText = setAttributeText("¥\(oilFee)×\(arrEmployee.count)人")
             oilFeeTipTopLConstraint.constant = 10
@@ -339,58 +340,58 @@ class WriteOrderViewController: UIViewController {
         var temp = 0
         if accidentFee <= 0 || flag == 1 {
             
-            accidentFeeLabel.hidden = true
-            accidentFeeTipLabel.hidden = true
+            accidentFeeLabel.isHidden = true
+            accidentFeeTipLabel.isHidden = true
             accidentFeeLabel.attributedText = nil
             accidentFeeTipLabel.text = nil
             accidentFeeTipTopLConstraint.constant = 0
         }else{
             temp += 1
             bottomDetailCount += 1
-            accidentFeeLabel.hidden = false
-            accidentFeeTipLabel.hidden = false
-            accidentFeeLabel.attributedText = setAttributeText("¥\(accidentFee)×\(accidentButton.selected ? arrEmployee.count : 0)人")
+            accidentFeeLabel.isHidden = false
+            accidentFeeTipLabel.isHidden = false
+            accidentFeeLabel.attributedText = setAttributeText("¥\(accidentFee)×\(accidentButton.isSelected ? arrEmployee.count : 0)人")
             accidentFeeTipLabel.text = "航意险"
             accidentFeeTipTopLConstraint.constant = 10
         }
         if delayFee <= 0 || flag == 1 {
             
-            serviceFeeLabel.hidden = true
-            serviceFeeTipLabel.hidden = true
+            serviceFeeLabel.isHidden = true
+            serviceFeeTipLabel.isHidden = true
             serviceFeeTipLabel.text = nil
             serviceFeeLabel.attributedText = nil
             serviceFeeTipLConstraint.constant = 0
         }else{
             temp += 1
             bottomDetailCount += 1
-            serviceFeeLabel.hidden = false
-            serviceFeeTipLabel.hidden = false
+            serviceFeeLabel.isHidden = false
+            serviceFeeTipLabel.isHidden = false
             serviceFeeTipLabel.text = "服务费"
             serviceFeeLabel.attributedText = setAttributeText("¥\(delayFee)×\(arrEmployee.count)人")
             serviceFeeTipLConstraint.constant = 10
         }
         if temp > 0 {
-            dashedLineImageView.hidden = false
+            dashedLineImageView.isHidden = false
             dashedLineTopLConstraint.constant = 10
             bHiddenLine = false
         }else{
             bHiddenLine = true
-            dashedLineImageView.hidden = true
+            dashedLineImageView.isHidden = true
             dashedLineTopLConstraint.constant = 0
         }
     }
     
-    func setAttributeText(text : String) -> NSMutableAttributedString {
+    func setAttributeText(_ text : String) -> NSMutableAttributedString {
         let attributeString = NSMutableAttributedString(string: text)
         attributeString.addAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(TEXTCOLOR)], range: NSMakeRange(0, attributeString.length - 3))
         return attributeString
     }
     
-    @IBAction func showFlightInfo(sender: AnyObject) {
+    @IBAction func showFlightInfo(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
         if backIndexPath != nil {
-            let controller = self.storyboard?.instantiateViewControllerWithIdentifier("ToAndFromAirline") as! ToAndFromAirlineViewController
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "ToAndFromAirline") as! ToAndFromAirlineViewController
             controller.flightInfo = flightInfo
             controller.backFlightInfo = backFlightInfo
             let dialog = PopupDialog(viewController: controller)
@@ -398,33 +399,33 @@ class WriteOrderViewController: UIViewController {
             if let contentView = dialog.view as? PopupDialogContainerView {
                 contentView.cornerRadius = 10
             }
-            presentViewController(dialog, animated: true, completion: {
+            present(dialog, animated: true, completion: {
                 
             })
         }else{
-            let controller = self.storyboard?.instantiateViewControllerWithIdentifier("ToAirline") as! ToAirlineViewController
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "ToAirline") as! ToAirlineViewController
             controller.flightInfo = flightInfo
             let dialog = PopupDialog(viewController: controller)
             controller.popupDialog = dialog
             if let contentView = dialog.view as? PopupDialogContainerView {
                 contentView.cornerRadius = 10
             }
-            presentViewController(dialog, animated: true, completion: {
+            present(dialog, animated: true, completion: {
                 
             })
         }
     }
 
-    @IBAction func addEmployee(sender: AnyObject) {
+    @IBAction func addEmployee(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
-        self.performSegueWithIdentifier("toEdit", sender: self)
+        self.performSegue(withIdentifier: "toEdit", sender: self)
     }
     
-    @IBAction func addAccidentInsuranceFee(sender: AnyObject) {
+    @IBAction func addAccidentInsuranceFee(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
-        accidentButton.selected = !accidentButton.selected
+        accidentButton.isSelected = !accidentButton.isSelected
         setTotalMoney()
     }
  
@@ -435,16 +436,16 @@ class WriteOrderViewController: UIViewController {
      
      - returns: 字符串
      */
-    func dateToString(date : NSDate) -> String {
-        let formatter = NSDateFormatter()
+    func dateToString(_ date : Date) -> String {
+        let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        let dateString = formatter.stringFromDate(date)
-        let dateArray = dateString.componentsSeparatedByString("-").map{UInt($0)!}
-        let dateModel = XZCalendarModel.calendarDayWithYear(dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
-        return "\(dateModel.month < 10 ? "0\(dateModel.month )" : "\(dateModel.month)")月\(dateModel.day < 10 ? "0\(dateModel.day)" : "\(dateModel.day)")日\(dateModel.getWeek())"
+        let dateString = formatter.string(from: date)
+        let dateArray = dateString.components(separatedBy: "-").map{UInt($0)!}
+        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
+        return "\(dateModel!.month < 10 ? "0\(dateModel!.month )" : "\(dateModel!.month)")月\(dateModel!.day < 10 ? "0\(dateModel!.day)" : "\(dateModel!.day)")日\(dateModel!.getWeek()!)"
     }
     
-    @IBAction func sumbitOrder(sender: AnyObject) {
+    @IBAction func sumbitOrder(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
         if flag == 1 {
@@ -452,7 +453,7 @@ class WriteOrderViewController: UIViewController {
             return
         }
         if arrEmployee.count == 0 {
-            JLToast.makeText("请先添加乘机人").show()
+            Toast(text: "请先添加乘机人").show()
             return
         }
         showConfirmDialog()
@@ -463,56 +464,56 @@ class WriteOrderViewController: UIViewController {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            var params : [String : AnyObject] = [:]
-            var passengers : [[String : AnyObject]] = []
+            var params : [String : Any] = [:]
+            var passengers : [[String : Any]] = []
             for employ in arrEmployee {
-                var dictionary : [String : AnyObject] = [:]
+                var dictionary : [String : Any] = [:]
                 if canBookingForOthers {
                     dictionary["PassengerName"] = employ["isUser"].boolValue ?  employ["employee" , "Name"].stringValue : employ["employee" , "EmployeeName"].stringValue
                     let isEmployee =  employ["isUser"].boolValue ?  employ["employee" , "IsEmployee"].boolValue : (employ["employee" , "EmployeeId"].intValue == 0 ? false : true)
-                    dictionary["IsEmployee"] = isEmployee
+                    dictionary["IsEmployee"] = isEmployee  
                     if isEmployee {
                         dictionary["EmployeeId"] = employ["isUser"].boolValue ?  employ["employee" , "BelongedEmployeeId"].intValue : employ["employee" , "EmployeeId"].intValue
                     }
-                    dictionary["PassengerType"] = "Adult"
-                    dictionary["CertType"] = employ["credentialType"].stringValue
-                    dictionary["CertNo"] = employ["credentialNo"].stringValue
-                    dictionary["Mobile"] = employ["employee" , "Mobile"].stringValue
+                    dictionary["PassengerType"] = "Adult"  
+                    dictionary["CertType"] = employ["credentialType"].stringValue  
+                    dictionary["CertNo"] = employ["credentialNo"].stringValue  
+                    dictionary["Mobile"] = employ["employee" , "Mobile"].stringValue  
                     dictionary["BelongedDeptId"] = employ["isUser"].boolValue ?  employ["employee" , "BelongedDepartmentId"].intValue : employ["employee" , "DepartmentId"].intValue
                     if !isGreenChannel {
                         if approvalRequired {
-                            dictionary["ApprovalId"] = employ["approval" , "ApprovalId"].intValue
+                            dictionary["ApprovalId"] = employ["approval" , "ApprovalId"].intValue  
                         }
                     }
                     if isProjectRequired {
-                        dictionary["ProjectId"] = employ["project" , "ProjectId"].intValue
+                        dictionary["ProjectId"] = employ["project" , "ProjectId"].intValue  
                     }
-                    dictionary["InsuranceCount"] = accidentButton.selected ? 1 : 0
-                    dictionary["ReceiveFlightDynamic"] = true
+                    dictionary["InsuranceCount"] = accidentButton.isSelected ? 1 : 0  
+                    dictionary["ReceiveFlightDynamic"] = true  
                 }else{
-                    dictionary["PassengerName"] =  employ["EmployeeName"].stringValue
-                    dictionary["IsEmployee"] = true
-                    dictionary["EmployeeId"] = employ["EmployeeId"].intValue
-                    dictionary["PassengerType"] = "Adult"
-                    dictionary["CertType"] = employ["DefaultCertType"].stringValue
-                    dictionary["CertNo"] = employ["DefaultCertNo"].stringValue
-                    dictionary["Mobile"] = employ["Mobile"].stringValue
-                    dictionary["BelongedDeptId"] =  employ["DepartmentId"].intValue
+                    dictionary["PassengerName"] =  employ["EmployeeName"].stringValue  
+                    dictionary["IsEmployee"] = true  
+                    dictionary["EmployeeId"] = employ["EmployeeId"].intValue  
+                    dictionary["PassengerType"] = "Adult"  
+                    dictionary["CertType"] = employ["DefaultCertType"].stringValue  
+                    dictionary["CertNo"] = employ["DefaultCertNo"].stringValue  
+                    dictionary["Mobile"] = employ["Mobile"].stringValue  
+                    dictionary["BelongedDeptId"] =  employ["DepartmentId"].intValue  
                     if !isGreenChannel {
                         if approvalRequired {
-                            dictionary["ApprovalId"] = employ["approval" , "ApprovalId"].intValue
+                            dictionary["ApprovalId"] = employ["approval" , "ApprovalId"].intValue  
                         }
                     }
                     if isProjectRequired {
-                        dictionary["ProjectId"] = employ["project" , "ProjectId"].intValue
+                        dictionary["ProjectId"] = employ["project" , "ProjectId"].intValue  
                     }
-                    dictionary["InsuranceCount"] = accidentButton.selected ? 1 : 0
-                    dictionary["ReceiveFlightDynamic"] = true
+                    dictionary["InsuranceCount"] = accidentButton.isSelected ? 1 : 0  
+                    dictionary["ReceiveFlightDynamic"] = true  
                 }
                 passengers.append(dictionary)
             }
             params["Passengers"] = passengers
-            params["ContactName"] = contacterTextfield.text ?? ""
+            params["ContactName"] = contacterTextfield.text  ?? ""
             let mobileContact = mobileTextfield.text ?? ""
             if mobileContact.characters.count > 0 {
                 params["ContactMobile"] = mobileContact
@@ -522,13 +523,13 @@ class WriteOrderViewController: UIViewController {
             //flightInfo["Bunks"] = JSON([bunkInfo])
             params["FirstRoute"] = flightInfo.object
             if travelPolicy != nil && dicTravelSelected != nil && dicTravelSelected.count > 0 {
-                var dictionary : [String : AnyObject] = [:]
-                dictionary["DiscountLimitWarningMsg"] = travelPolicy["DiscountLimitWarningMsg"].stringValue
-                dictionary["LowPriceWarningMsg"] = travelPolicy["LowPriceWarningMsg"].stringValue
+                var dictionary : [String : Any] = [:]
+                dictionary["DiscountLimitWarningMsg"] = travelPolicy["DiscountLimitWarningMsg"].stringValue  
+                dictionary["LowPriceWarningMsg"] = travelPolicy["LowPriceWarningMsg"].stringValue  
                 dictionary["NotLowPriceReason"] = travelPolicy["LowPriceWarningMsg"].string != nil ? travelPolicy["LowPriceReasons" , dicTravelSelected[0]!].stringValue : ""
                 dictionary["NotPreNDaysReason"] = travelPolicy["PreNDaysWarningMsg"].string != nil ? (dicTravelSelected.count > 1 ? travelPolicy["PreNDaysReasons" , dicTravelSelected[1]!].stringValue  : travelPolicy["PreNDaysReasons" , dicTravelSelected[0]!].stringValue ) : ""
-                dictionary["PreNDaysWarningMsg"] = travelPolicy["PreNDaysWarningMsg"].stringValue
-                dictionary["TwoCabinWarningMsg"] = travelPolicy["TwoCabinWarningMsg"].stringValue
+                dictionary["PreNDaysWarningMsg"] = travelPolicy["PreNDaysWarningMsg"].stringValue  
+                dictionary["TwoCabinWarningMsg"] = travelPolicy["TwoCabinWarningMsg"].stringValue  
                 params["FirstRoutePolicyInfo"] = dictionary
             }
             if backFlightInfo != nil {
@@ -537,28 +538,28 @@ class WriteOrderViewController: UIViewController {
                 params["SecondRoute"] = backFlightInfo.object
             }
             if backTravelPolicy != nil && dicBackTravelSelected != nil && dicBackTravelSelected.count > 0 {
-                var dictionary : [String : AnyObject] = [:]
-                dictionary["DiscountLimitWarningMsg"] = backTravelPolicy["DiscountLimitWarningMsg"].stringValue
-                dictionary["LowPriceWarningMsg"] = backTravelPolicy["LowPriceWarningMsg"].stringValue
+                var dictionary : [String : Any] = [:]
+                dictionary["DiscountLimitWarningMsg"] = backTravelPolicy["DiscountLimitWarningMsg"].stringValue  
+                dictionary["LowPriceWarningMsg"] = backTravelPolicy["LowPriceWarningMsg"].stringValue  
                 dictionary["NotLowPriceReason"] = backTravelPolicy["LowPriceWarningMsg"].string != nil ? backTravelPolicy["LowPriceReasons" , dicBackTravelSelected[0]!].stringValue : ""
                 dictionary["NotPreNDaysReason"] = backTravelPolicy["PreNDaysWarningMsg"].string != nil ? (dicBackTravelSelected.count > 1 ? backTravelPolicy["PreNDaysReasons" , dicBackTravelSelected[1]!].stringValue  : backTravelPolicy["PreNDaysReasons" , dicBackTravelSelected[0]!].stringValue ) : ""
-                dictionary["PreNDaysWarningMsg"] = backTravelPolicy["PreNDaysWarningMsg"].stringValue
-                dictionary["TwoCabinWarningMsg"] = backTravelPolicy["TwoCabinWarningMsg"].stringValue
-                params["SecondRoutePolicyInfo"] = dictionary
+                dictionary["PreNDaysWarningMsg"] = backTravelPolicy["PreNDaysWarningMsg"].stringValue  
+                dictionary["TwoCabinWarningMsg"] = backTravelPolicy["TwoCabinWarningMsg"].stringValue  
+                params["SecondRoutePolicyInfo"] = dictionary  
             }
             print(params)
             manager.postRequest(manager.placeAskOrder, params: params, headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.askOrderConfirmByCorpCredit(model["AskOrderId"].intValue)
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
@@ -566,10 +567,10 @@ class WriteOrderViewController: UIViewController {
     }
     
     func showConfirmDialog() {
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("ConfirmOrder") as! ConfirmOrderViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "ConfirmOrder") as! ConfirmOrderViewController
         var travelManName = ""
         for json in self.arrEmployee {
-            if let isUser = json["isUser"].bool where isUser {
+            if let isUser = json["isUser"].bool, isUser {
                 travelManName += json["employee" , "Name"].stringValue + " "
             }else{
                 travelManName += json["employee" , "EmployeeName"].stringValue + " "
@@ -590,18 +591,18 @@ class WriteOrderViewController: UIViewController {
         })
         cancelButton.buttonColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         cancelButton.titleColor = UIColor.hexStringToColor(FONTCOLOR)
-        cancelButton.titleFont = UIFont.systemFontOfSize(15)
+        cancelButton.titleFont = UIFont.systemFont(ofSize: 15)
         
         let okButton = PopupDialogButton(title: "确认出票", dismissOnTap: true, action: { [weak self] in
             self?.submitFlightOrder()
             
             })
         okButton.buttonColor = UIColor.hexStringToColor(TEXTCOLOR)
-        okButton.titleColor = UIColor.whiteColor()
-        okButton.titleFont = UIFont.systemFontOfSize(15)
+        okButton.titleColor = UIColor.white
+        okButton.titleFont = UIFont.systemFont(ofSize: 15)
         dialog.addButtons([cancelButton , okButton])
-        dialog.buttonAlignment = .Horizontal
-        self.presentViewController(dialog, animated: true, completion: {
+        dialog.buttonAlignment = .horizontal
+        self.present(dialog, animated: true, completion: {
             
         })
     }
@@ -614,78 +615,78 @@ class WriteOrderViewController: UIViewController {
         let hud = showHUD()
         if let token = manager.validateToken() {
             let factPrice = flag == 1 ? travelPolicy["FactTicketPrice"].intValue : 0
-            var params : [String : AnyObject] = [:]
-            params["SrcOrderId"] = travelPolicy["OrderId"].intValue
-            params["ChangeReason"] = reason
-            params["ChangeDifferencePrice"] = fee - factPrice
+            var params : [String : Any] = [:]
+            params["SrcOrderId"] = travelPolicy["OrderId"].intValue  
+            params["ChangeReason"] = reason  
+            params["ChangeDifferencePrice"] = fee - factPrice  
             let bunkInfo = flightInfo["Bunks" , indexPath.row]
             if var dict = flightInfo.dictionaryObject {
                 dict["Bunks"] = [bunkInfo.dictionaryObject!]
-                params["ChangeRoute"] = dict
+                params["ChangeRoute"] = dict  
             }
             print(params)
             manager.postRequest(manager.changeApply, params: params, headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
-                        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: 3)
                         for viewController in self!.navigationController!.viewControllers {
                             if viewController is OrderListTableViewController {
                                 self?.navigationController?.popToViewController(viewController, animated: true)
                                 break
                             }
                         }
-                        JLToast.makeText("改签成功").show()
+                        Toast(text: "改签成功").show()
                         
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
             })
         }
 
     }
     
-    func getEmployeeInfo(employeeId : Int) {
+    func getEmployeeInfo(_ employeeId : Int) {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.getRequest(manager.getEmployee, params: [ "employeeId" : employeeId], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.getRequest(manager.getEmployee, params: [ "employeeId" : employeeId  ], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.addPassenger(model["Employee"])
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
     }
     
-    func askOrderConfirmByCorpCredit(askOrderId : Int) {
+    func askOrderConfirmByCorpCredit(_ askOrderId : Int) {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId], encoding : .URLEncodedInURL ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId  ], encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
-                        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
-                        let controller = self?.storyboard?.instantiateViewControllerWithIdentifier("OrderSuccess") as! OrderSuccessViewController
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: 3)
+                        let controller = self?.storyboard?.instantiateViewController(withIdentifier: "OrderSuccess") as! OrderSuccessViewController
                         controller.flightInfo = self?.flightInfo
                         controller.backFlightInfo = self?.backFlightInfo
                         var travelManName = ""
                         for json in self!.arrEmployee {
-                            if let isUser = json["isUser"].bool where isUser {
+                            if let isUser = json["isUser"].bool, isUser {
                                 travelManName += json["employee" , "Name"].stringValue + " "
                             }else{
                                 travelManName += json["employee" , "EmployeeName"].stringValue + " "
@@ -696,26 +697,26 @@ class WriteOrderViewController: UIViewController {
                         
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
             })
         }
     }
     
     // 显示订单详情
-    @IBAction func showOrderDetail(sender: AnyObject) {
+    @IBAction func showOrderDetail(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
         if arrEmployee.count == 0 {
-            let alertController = UIAlertController(title: nil, message: "请先添加乘机人", preferredStyle: .Alert)
-            alertController.addAction(UIAlertAction(title: "确定", style: .Cancel, handler: { (action) in
+            let alertController = UIAlertController(title: nil, message: "请先添加乘机人", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "确定", style: .cancel, handler: { (action) in
                 
             }))
-            self.presentViewController(alertController, animated: true, completion: {
+            self.present(alertController, animated: true, completion: {
                 
             })
             return
@@ -723,47 +724,47 @@ class WriteOrderViewController: UIViewController {
         let height : CGFloat = CGFloat(-((165 - (47 + bottomDetailCount * 27)) - (bHiddenLine ? 0 : 11)))
         if detailViewBottomLConstraint.constant == (flag == 1 ? height : -47) {
             detailViewBottomLConstraint.constant = -165
-            UIView.animateWithDuration(0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.8, options: .CurveEaseInOut, animations: { 
+            UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.8, options: UIViewAnimationOptions(), animations: { 
                 [weak self] in
                 self?.feeDetailView.layoutIfNeeded()
-                self?.arrowImageView.transform = CGAffineTransformIdentity
+                self?.arrowImageView.transform = CGAffineTransform.identity
                 }, completion: {[weak self] (finished) in
-                    self?.feeDetailView.hidden = true
+                    self?.feeDetailView.isHidden = true
             })
         }else{
             detailViewBottomLConstraint.constant = (flag == 1 ? height : -47)
-            feeDetailView.hidden = false
-            UIView.animateWithDuration(0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.8, options: .CurveEaseInOut, animations: { 
+            feeDetailView.isHidden = false
+            UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.8, options: UIViewAnimationOptions(), animations: { 
                     [weak self] in
                 self?.feeDetailView.layoutIfNeeded()
-                self?.arrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
+                self?.arrowImageView.transform = CGAffineTransform(rotationAngle: CGFloat(M_PI))
                 }, completion: { (finished) in
                     
             })
         }
     }
     
-    @IBAction func showFlightPolicy(sender: AnyObject) {
+    @IBAction func showFlightPolicy(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             if let token = info["Token"] as? String {
                 let airlineCode = flightInfo["Airline"].stringValue
                 let bunkCode = flightInfo["Bunks" , indexPath.row , "BunkCode"].stringValue
                 var departureDate = flightInfo["Departure" , "DateTime"].stringValue
                 if departureDate.characters.count > 10 {
-                    departureDate = departureDate.substringToIndex(departureDate.startIndex.advancedBy(10))
+                    departureDate = departureDate.substring(to: departureDate.characters.index(departureDate.startIndex, offsetBy: 10))
                 }
                 let departureCode = flightInfo["Departure" , "AirportCode"].stringValue
                 let arrivalCode = flightInfo["Arrival" , "AirportCode"].stringValue
                 let params = ["airlineCode" : airlineCode , "bunkCode" : bunkCode , "departureDate" : departureDate , "departureAirportCode" : departureCode , "arrivalAirportCode" : arrivalCode]
                 let hud = showHUD()
                 let manager = URLCollection()
-                manager.getRequest(manager.getFlightPolicy, params: params, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                    hud.hideAnimated(true)
+                manager.getRequest(manager.getFlightPolicy, params: params as [String : AnyObject], headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+                    hud.hide(animated: true)
                     if let json = jsonObject {
                         if json["Code"].int == 0 {
-                            let controller = self?.storyboard?.instantiateViewControllerWithIdentifier("FlightPolicy") as! FlightPolicyViewController
+                            let controller = self?.storyboard?.instantiateViewController(withIdentifier: "FlightPolicy") as! FlightPolicyViewController
                             controller.policy = json
                             controller.flightInfo = self!.flightInfo
                             controller.indexPath = self!.indexPath
@@ -773,16 +774,16 @@ class WriteOrderViewController: UIViewController {
                             if let contentView = dialog.view as? PopupDialogContainerView {
                                 contentView.cornerRadius = 10
                             }
-                            self?.presentViewController(dialog, animated: true, completion: {
+                            self?.present(dialog, animated: true, completion: {
                                 
                             })
                         }else{
                             if let message = json["Message"].string {
-                                JLToast.makeText(message).show()
+                                Toast(text: message).show()
                             }
                         }
                     }else{
-                        JLToast.makeText("网络不给力，请检查网络!").show()
+                        Toast(text: "网络不给力，请检查网络!").show()
                     }
                     })
             }
@@ -790,17 +791,17 @@ class WriteOrderViewController: UIViewController {
     }
     // MARK: - Navigation
 
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let controller = segue.destinationViewController as? EditEmployeeViewController {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let controller = segue.destination as? EditEmployeeViewController {
             controller.flightInfo = flightInfo
             controller.title = "乘机人"
         }
     }
 
-    @IBAction func callCustomService(sender: AnyObject) {
+    @IBAction func callCustomService(_ sender: AnyObject) {
         contacterTextfield.resignFirstResponder()
         mobileTextfield.resignFirstResponder()
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("MobileCall") as! MobileCallViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "MobileCall") as! MobileCallViewController
         controller.mobile = "400-600-2084"
         let dialog = PopupDialog(viewController: controller)
        
@@ -812,30 +813,30 @@ class WriteOrderViewController: UIViewController {
         })
         cancelButton.buttonColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         cancelButton.titleColor = UIColor.hexStringToColor(FONTCOLOR)
-        cancelButton.titleFont = UIFont.systemFontOfSize(15)
+        cancelButton.titleFont = UIFont.systemFont(ofSize: 15)
         
         let okButton = PopupDialogButton(title: "呼叫", dismissOnTap: true, action: {
-            UIApplication.sharedApplication().openURL(NSURL(string: "tel://4006002084")!)
+            UIApplication.shared.openURL(URL(string: "tel://4006002084")!)
             })
         okButton.buttonColor = UIColor.hexStringToColor(TEXTCOLOR)
-        okButton.titleColor = UIColor.whiteColor()
-        okButton.titleFont = UIFont.systemFontOfSize(15)
+        okButton.titleColor = UIColor.white
+        okButton.titleFont = UIFont.systemFont(ofSize: 15)
         dialog.addButtons([cancelButton , okButton])
-        dialog.buttonAlignment = .Horizontal
-        self.presentViewController(dialog, animated: true, completion: {
+        dialog.buttonAlignment = .horizontal
+        self.present(dialog, animated: true, completion: {
             
         })
     }
    
-    @IBAction func backWhenFinished(sender: AnyObject) {
-        let alertController = UIAlertController(title: nil, message: flag == 1 ? "您的改签尚未完成，是否确定要离开当前页面" : "您的订单尚未填写完成，是否确定要离开当前页面", preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "取消", style: .Cancel, handler: { (action) in
+    @IBAction func backWhenFinished(_ sender: AnyObject) {
+        let alertController = UIAlertController(title: nil, message: flag == 1 ? "您的改签尚未完成，是否确定要离开当前页面" : "您的订单尚未填写完成，是否确定要离开当前页面", preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
             
         }))
-        alertController.addAction(UIAlertAction(title: "确定", style: .Default, handler: {[weak self] (action) in
-            self?.navigationController?.popViewControllerAnimated(true)
+        alertController.addAction(UIAlertAction(title: "确定", style: .default, handler: {[weak self] (action) in
+            self?.navigationController?.popViewController(animated: true)
             }))
-        self.presentViewController(alertController, animated: true, completion: {
+        self.present(alertController, animated: true, completion: {
             
         })
     }

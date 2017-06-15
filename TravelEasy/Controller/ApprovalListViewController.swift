@@ -9,9 +9,34 @@
 import UIKit
 import MJRefresh
 import SwiftyJSON
-import JLToast
+import Toaster
 import MBProgressHUD
 import PopupDialog
+import Alamofire
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class ApprovalListViewController: UIViewController , UITableViewDataSource , UITableViewDelegate {
     
@@ -36,53 +61,53 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), forState: .Normal, barMetrics: .Default)
-        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), forState: .Selected, barMetrics: .Default)
-        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), forState: .Highlighted, barMetrics: .Default)
-        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(FONTCOLOR) , NSFontAttributeName : UIFont.systemFontOfSize(13)], forState: .Normal)
-        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor("0071C4") , NSFontAttributeName : UIFont.systemFontOfSize(13)], forState: .Selected)
-        segmentedControl.setDividerImage(UIImage.imageWithColor("ffffff"), forLeftSegmentState: .Normal, rightSegmentState: .Normal, barMetrics: .Default)
+        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), for: UIControlState(), barMetrics: .default)
+        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), for: .selected, barMetrics: .default)
+        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), for: .highlighted, barMetrics: .default)
+        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(FONTCOLOR) , NSFontAttributeName : UIFont.systemFont(ofSize: 13)], for: UIControlState())
+        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor("0071C4") , NSFontAttributeName : UIFont.systemFont(ofSize: 13)], for: .selected)
+        segmentedControl.setDividerImage(UIImage.imageWithColor("ffffff"), forLeftSegmentState: UIControlState(), rightSegmentState: UIControlState(), barMetrics: .default)
         
         emptyView = EmptyManager.getInstance.insertEmptyView(with: self.view, top: 0, emptyType: .noFuction)
-        emptyView.hidden = true
+        emptyView.isHidden = true
         tableEmptyView = EmptyManager.getInstance.insertEmptyView(with: self.view, top: 44, emptyType: .noData)
-        tableEmptyView.hidden = true
+        tableEmptyView.isHidden = true
         
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             approvalRequired = info["ApprovalRequired"] as! Bool
             overrunOption = info["OverrunOption"] as! String
-            let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-            let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+            let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+            let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
             if approvalRequired && overrunOption == "WarningAndAuthorize" {
                 self.navigationItem.title = "审批授权"
-                segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
-                segmentedControl.insertSegmentWithTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", atIndex: 3, animated: false)
-                segmentedControl.insertSegmentWithTitle("已授权", atIndex: 4, animated: false)
+                segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
+                segmentedControl.insertSegment(withTitle: "待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", at: 3, animated: false)
+                segmentedControl.insertSegment(withTitle: "已授权", at: 4, animated: false)
                 indicatorWidthLConstraint.constant = SCREENWIDTH / 5
                 segmentItemWidth = SCREENWIDTH / 5
                 status = 1
-                self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "填写计划", style: .Plain, target: self, action: #selector(ApprovalListViewController.createNewApproval))
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "填写计划", style: .plain, target: self, action: #selector(ApprovalListViewController.createNewApproval))
             }else if approvalRequired && overrunOption != "WarningAndAuthorize" {
                 self.navigationItem.title = "审批"
                 indicatorWidthLConstraint.constant = SCREENWIDTH / 3
                 segmentItemWidth = SCREENWIDTH / 3
-                self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "填写计划", style: .Plain, target: self, action: #selector(ApprovalListViewController.createNewApproval))
-                segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "填写计划", style: .plain, target: self, action: #selector(ApprovalListViewController.createNewApproval))
+                segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
             }else if overrunOption == "WarningAndAuthorize" {
                 self.navigationItem.title = "授权"
                 indicatorWidthLConstraint.constant = SCREENWIDTH / 2
-                segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAtIndex: 0)
-                segmentedControl.setTitle("已授权", forSegmentAtIndex: 1)
-                segmentedControl.removeSegmentAtIndex(2, animated: false)
+                segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAt: 0)
+                segmentedControl.setTitle("已授权", forSegmentAt: 1)
+                segmentedControl.removeSegment(at: 2, animated: false)
                 segmentItemWidth = SCREENWIDTH / 2
                 status = 2
             }else{
                 self.navigationItem.title = "审批"
-                segmentedControl.hidden = true
-                indicatorImageView.hidden = true
-                lineImageView.hidden = true
-                tableView.hidden = true
-                emptyView.hidden = false
+                segmentedControl.isHidden = true
+                indicatorImageView.isHidden = true
+                lineImageView.isHidden = true
+                tableView.isHidden = true
+                emptyView.isHidden = false
             }
         }
         tableView.mj_header = MJRefreshNormalHeader{ [weak self] in
@@ -96,7 +121,7 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
             self?.getApprovalList()
         }
         tableView.mj_header.beginRefreshing()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ApprovalListViewController.handleNotification(_:)), name: "ApprovalListViewController", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ApprovalListViewController.handleNotification(_:)), name: NSNotification.Name(rawValue: "ApprovalListViewController"), object: nil)
         
     }
     
@@ -107,7 +132,7 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
     /**
@@ -115,11 +140,11 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
      
      - parameter sender: segmentControl
      */
-    @IBAction func changeValue(sender: AnyObject) {
+    @IBAction func changeValue(_ sender: AnyObject) {
         indicatorLeftLConstraint.constant = CGFloat(segmentedControl.selectedSegmentIndex) * segmentItemWidth
         if segmentedControl.selectedSegmentIndex == 0 {
             if segmentedControl.numberOfSegments > 2 {
-                self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "填写计划", style: .Plain, target: self, action: #selector(ApprovalListViewController.createNewApproval))
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "填写计划", style: .plain, target: self, action: #selector(ApprovalListViewController.createNewApproval))
             }
         }else {
             self.navigationItem.rightBarButtonItem = nil
@@ -131,11 +156,11 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
      填写计划
      */
     func createNewApproval()  {
-        self.performSegueWithIdentifier("toNewApproval", sender: self)
+        self.performSegue(withIdentifier: "toNewApproval", sender: self)
     }
     
     func getApprovalList() {
-        self.tableEmptyView.hidden = true
+        self.tableEmptyView.isHidden = true
         let manager = URLCollection()
         if let token = manager.validateToken() {
             var urlString = ""
@@ -162,7 +187,7 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 self?.tableView.mj_header.endRefreshing()
                 self?.tableView.mj_footer.endRefreshing()
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
+                    if let code = json["Code"].int, code == 0 {
                         let name = self!.status == 2 || self!.segmentedControl.selectedSegmentIndex >= 3 ? "Authorizes" : "Approvals"
                         if let approvals = json[name].array {
                             self?.arrApproval += approvals
@@ -171,42 +196,42 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                             if self?.arrApproval.count == self?.totalCount {
                                 self?.tableView.mj_footer.endRefreshingWithNoMoreData()
                             }
-                            let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-                            let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+                            let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+                            let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
                             if self!.status == 2 {
                                 if self!.segmentedControl.selectedSegmentIndex == 0 {
                                     if authorizeCount != self!.totalCount {
-                                        NSUserDefaults.standardUserDefaults().setInteger(self!.totalCount, forKey: "authorizeCount")
-                                        NSUserDefaults.standardUserDefaults().synchronize()
-                                        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 4)
+                                        UserDefaults.standard.set(self!.totalCount, forKey: "authorizeCount")
+                                        UserDefaults.standard.synchronize()
+                                        NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 4)
                                     }
                                 }
                             }else{
                                 if self!.segmentedControl.selectedSegmentIndex == 1 {
                                     if approvalCount != self!.totalCount {
-                                        NSUserDefaults.standardUserDefaults().setInteger(self!.totalCount, forKey: "approvalCount")
-                                        NSUserDefaults.standardUserDefaults().synchronize()
-                                        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 4)
+                                        UserDefaults.standard.set(self!.totalCount, forKey: "approvalCount")
+                                        UserDefaults.standard.synchronize()
+                                        NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 4)
                                     }
                                 }else if self!.segmentedControl.selectedSegmentIndex == 3 {
                                     if authorizeCount != self!.totalCount {
-                                        NSUserDefaults.standardUserDefaults().setInteger(self!.totalCount, forKey: "authorizeCount")
-                                        NSUserDefaults.standardUserDefaults().synchronize()
-                                        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 4)
+                                        UserDefaults.standard.set(self!.totalCount, forKey: "authorizeCount")
+                                        UserDefaults.standard.synchronize()
+                                        NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 4)
                                     }
                                 }
                             }
                             if self!.pageNumber == 1 && approvals.count == 0 {
-                                self!.tableEmptyView.hidden = false
+                                self!.tableEmptyView.isHidden = false
                             }
                         }
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
             })
         }
@@ -217,12 +242,12 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
      
      - parameter row: 列
      */
-    func auditPassOrReject(row : Int , eventTag : Int , opinion : String?)  {
+    func auditPassOrReject(_ row : Int , eventTag : Int , opinion : String?)  {
         let hud = showHUD()
         let manager = URLCollection()
         if let token = manager.validateToken() {
             var urlString = ""
-            var params : [String : AnyObject] = [:]
+            var params : [String : Any] = [:]
             if status == 2 || segmentedControl.selectedSegmentIndex >= 3 {
                 urlString = eventTag > 0 ? manager.auditPassAuthorize : manager.auditRejectAuthorize
                 params["AuthorizeId"] = arrApproval[row]["AuthorizeId"].intValue
@@ -237,26 +262,26 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
             if opinion != nil && opinion?.characters.count > 0 {
                 params["opinion"] = opinion!
             }
-            manager.postRequest(urlString, params: params , encoding : .URLEncodedInURL , headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(urlString, params: params , encoding : URLEncoding.default , headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
+                    if let code = json["Code"].int, code == 0 {
                         self?.tableView.mj_header.beginRefreshing()
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
             })
         }
         
     }
     
-    func changeDateType(date : String) -> String {
-        let array = date.componentsSeparatedByString("-")
+    func changeDateType(_ date : String) -> String {
+        let array = date.components(separatedBy: "-")
         if array.count == 3 {
             return "\(array[0])年\(array[1])月\(array[2])日"
         }else{
@@ -266,40 +291,40 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
     
     // MARK: - TableView DataSource
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return arrApproval.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as! ApprovalTableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! ApprovalTableViewCell
         cell.tag = indexPath.row
         let json = arrApproval[indexPath.row]
         if status == 2 {
             if segmentedControl.selectedSegmentIndex == 0 {
                 cell.nameLabel.text = "\(json["TravellerName"].stringValue)的订单需要您授权"
                 cell.oneLabel.text = "出差地点"
-                cell.oneContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[1]
+                cell.oneContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[1]
                 cell.twoLabel.text = "出差时间"
-                cell.twoContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[0]
+                cell.twoContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[0]
                 cell.statusLabel.text = json["Status"].stringValue
-                if let status = json["Status"].string where status == "待订单授权"{
-                    cell.cancelButton.hidden = false
-                    cell.okButton.hidden = false
-                    cell.cancelButton.setTitle("拒绝", forState: .Normal)
-                    cell.okButton.setTitle("同意", forState: .Normal)
+                if let status = json["Status"].string, status == "待订单授权"{
+                    cell.cancelButton.isHidden = false
+                    cell.okButton.isHidden = false
+                    cell.cancelButton.setTitle("拒绝", for: UIControlState())
+                    cell.okButton.setTitle("同意", for: UIControlState())
                 }else{
-                    cell.cancelButton.hidden = true
-                    cell.okButton.hidden = true
+                    cell.cancelButton.isHidden = true
+                    cell.okButton.isHidden = true
                 }
             }else{
                 cell.nameLabel.text = "\(json["AskEmployeeName"].stringValue)的订单授权"
                 cell.oneLabel.text = "出差地点"
-                cell.oneContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[1]
+                cell.oneContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[1]
                 cell.twoLabel.text = "出差时间"
-                cell.twoContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[0]
+                cell.twoContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[0]
                 cell.statusLabel.text = json["Status"].stringValue
-                cell.cancelButton.hidden = true
-                cell.okButton.hidden = true
+                cell.cancelButton.isHidden = true
+                cell.okButton.isHidden = true
             }
         }else{
             if segmentedControl.selectedSegmentIndex == 0 {
@@ -309,13 +334,13 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 cell.twoLabel.text = "出差时间"
                 cell.twoContentLabel.text = changeDateType(json["TravelDateStart"].stringValue) + "-" + changeDateType(json["TravelDateEnd"].stringValue)
                 cell.statusLabel.text = json["Status"].stringValue
-                if let status = json["Status"].string where status == "待审批"{
-                    cell.okButton.hidden = false
-                    cell.okButton.setTitle("撤销", forState: .Normal)
+                if let status = json["Status"].string, status == "待审批"{
+                    cell.okButton.isHidden = false
+                    cell.okButton.setTitle("撤销", for: UIControlState())
                 }else{
-                    cell.okButton.hidden = true
+                    cell.okButton.isHidden = true
                 }
-                cell.cancelButton.hidden = true
+                cell.cancelButton.isHidden = true
             }else if segmentedControl.selectedSegmentIndex == 1 {
                 cell.nameLabel.text = "\(json["AskEmployeeName"].stringValue)的出差审批需要您审批"
                 cell.oneLabel.text = "出差地点"
@@ -323,14 +348,14 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 cell.twoLabel.text = "出差时间"
                 cell.twoContentLabel.text = changeDateType(json["TravelDateStart"].stringValue) + "-" + changeDateType(json["TravelDateEnd"].stringValue)
                 cell.statusLabel.text = json["Status"].stringValue
-                if let status = json["Status"].string where status == "待审批"{
-                    cell.cancelButton.hidden = false
-                    cell.okButton.hidden = false
-                    cell.cancelButton.setTitle("拒绝", forState: .Normal)
-                    cell.okButton.setTitle("同意", forState: .Normal)
+                if let status = json["Status"].string, status == "待审批"{
+                    cell.cancelButton.isHidden = false
+                    cell.okButton.isHidden = false
+                    cell.cancelButton.setTitle("拒绝", for: UIControlState())
+                    cell.okButton.setTitle("同意", for: UIControlState())
                 }else{
-                    cell.cancelButton.hidden = true
-                    cell.okButton.hidden = true
+                    cell.cancelButton.isHidden = true
+                    cell.okButton.isHidden = true
                 }
                 
             }else if segmentedControl.selectedSegmentIndex == 2 {
@@ -340,51 +365,51 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 cell.twoLabel.text = "出差时间"
                 cell.twoContentLabel.text = changeDateType(json["TravelDateStart"].stringValue) + "-" + changeDateType(json["TravelDateEnd"].stringValue)
                 cell.statusLabel.text = "审批完成(\(json["Status"].stringValue))"
-                cell.cancelButton.hidden = true
-                cell.okButton.hidden = true
+                cell.cancelButton.isHidden = true
+                cell.okButton.isHidden = true
             }else if segmentedControl.selectedSegmentIndex == 3 {
                 cell.nameLabel.text = "\(json["TravellerName"].stringValue)的订单需要您授权"
                 cell.oneLabel.text = "出差地点"
-                cell.oneContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[1]
+                cell.oneContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[1]
                 cell.twoLabel.text = "出差时间"
-                cell.twoContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[0]
+                cell.twoContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[0]
                 cell.statusLabel.text = json["Status"].stringValue
-                if let status = json["Status"].string where status == "待授权"{
-                    cell.cancelButton.hidden = false
-                    cell.okButton.hidden = false
-                    cell.cancelButton.setTitle("拒绝", forState: .Normal)
-                    cell.okButton.setTitle("同意", forState: .Normal)
+                if let status = json["Status"].string, status == "待授权"{
+                    cell.cancelButton.isHidden = false
+                    cell.okButton.isHidden = false
+                    cell.cancelButton.setTitle("拒绝", for: UIControlState())
+                    cell.okButton.setTitle("同意", for: UIControlState())
                 }else{
-                    cell.cancelButton.hidden = true
-                    cell.okButton.hidden = true
+                    cell.cancelButton.isHidden = true
+                    cell.okButton.isHidden = true
                 }
             }else{
                 cell.nameLabel.text = "\(json["TravellerName"].stringValue)的订单授权"
                 cell.oneLabel.text = "出差地点"
-                cell.oneContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[1]
+                cell.oneContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[1]
                 cell.twoLabel.text = "出差时间"
-                cell.twoContentLabel.text = json["OrderDesc"].stringValue.componentsSeparatedByString(" ")[0]
+                cell.twoContentLabel.text = json["OrderDesc"].stringValue.components(separatedBy: " ")[0]
                 cell.statusLabel.text = json["Status"].stringValue
-                cell.cancelButton.hidden = true
-                cell.okButton.hidden = true
+                cell.cancelButton.isHidden = true
+                cell.okButton.isHidden = true
                 
             }
         }
-        cell.selectionStyle = .None
+        cell.selectionStyle = .none
         return cell
     }
     
     // MARK : - TableView Delegate
 
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     // MARK: - Navigation
 
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        if let controller = segue.destinationViewController as? ApprovalDetailViewController {
+        if let controller = segue.destination as? ApprovalDetailViewController {
             if segmentedControl.selectedSegmentIndex == 0 {
                 controller.isOwn = true
                 controller.title = "出差申请"
@@ -396,7 +421,7 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
             }
             controller.approvalId = approvalId
             
-        }else if let controller = segue.destinationViewController as? AuthorizeDetailViewController {
+        }else if let controller = segue.destination as? AuthorizeDetailViewController {
             controller.authorizeId = approvalId
             if arrApproval.count > 0 {
                 let json = arrApproval[indexRow]
@@ -406,7 +431,7 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
     }
     
     
-    func handleNotification(sender : NSNotification)  {
+    func handleNotification(_ sender : Notification)  {
         if let tag = sender.object as? Int {
             if tag == 1 {
                 if let dict = sender.userInfo {
@@ -425,36 +450,36 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 let json = arrApproval[row]
                 if status == 2 {
                     approvalId = json["AuthorizeId"].intValue
-                    self.performSegueWithIdentifier("toAuthorizeDetail", sender: self)
+                    self.performSegue(withIdentifier: "toAuthorizeDetail", sender: self)
                 }else{
                     if segmentedControl.selectedSegmentIndex < 3 {
                         approvalId = json["ApprovalId"].intValue
-                        self.performSegueWithIdentifier("toApprovalDetail", sender: self)
+                        self.performSegue(withIdentifier: "toApprovalDetail", sender: self)
                     }else{
                         approvalId = json["AuthorizeId"].intValue
-                        self.performSegueWithIdentifier("toAuthorizeDetail", sender: self)
+                        self.performSegue(withIdentifier: "toAuthorizeDetail", sender: self)
                     }
                 }
                 
             }else if tag == 3 {
                 tableView.mj_header.beginRefreshing()
             }else if tag == 4 {
-                if segmentedControl.hidden == false {
-                    let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-                    let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+                if segmentedControl.isHidden == false {
+                    let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+                    let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
                     if segmentedControl.numberOfSegments == 2 {
-                        segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAtIndex: 0)
+                        segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAt: 0)
                     }else if segmentedControl.numberOfSegments == 3 {
-                        segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
+                        segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
                     }else if segmentedControl.numberOfSegments == 5 {
                         if approvalCount > 0 {
-                            segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
+                            segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
                         }
                         if authorizeCount > 0 {
-                            segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAtIndex: 3)
+                            segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAt: 3)
                         }
                     }
-                    NSNotificationCenter.defaultCenter().postNotificationName("MTabBarViewController", object: 13)
+                    NotificationCenter.default.post(name: Notification.Name(rawValue: "MTabBarViewController"), object: 13)
                 }
             }else if tag == 5 {
                 changeSegmentControl()
@@ -462,8 +487,8 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
         }
     }
     
-    func showDialog(row : Int , eventTag : Int) {
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("RejectApproval") as! RejectApprovalViewController
+    func showDialog(_ row : Int , eventTag : Int) {
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "RejectApproval") as! RejectApprovalViewController
         let dialog = PopupDialog(viewController: controller)
         controller.popupDialog = dialog
         if let contentView = dialog.view as? PopupDialogContainerView {
@@ -474,39 +499,39 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
         })
         cancelButton.buttonColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         cancelButton.titleColor = UIColor.hexStringToColor(FONTCOLOR)
-        cancelButton.titleFont = UIFont.systemFontOfSize(15)
+        cancelButton.titleFont = UIFont.systemFont(ofSize: 15)
         
         let okButton = PopupDialogButton(title: "确认", dismissOnTap: true, action: { [weak self] in
             let text = controller.reasonTextView.text
-            if text.characters.count > 0 && text.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count > 0 {
+            if text!.characters.count > 0 && text?.trimmingCharacters(in: .whitespacesAndNewlines).characters.count > 0 {
                 self?.auditPassOrReject(row, eventTag: eventTag , opinion: text)
             }else{
                 self?.auditPassOrReject(row, eventTag: eventTag , opinion: nil)
             }
             })
         okButton.buttonColor = UIColor.hexStringToColor(TEXTCOLOR)
-        okButton.titleColor = UIColor.whiteColor()
-        okButton.titleFont = UIFont.systemFontOfSize(15)
+        okButton.titleColor = UIColor.white
+        okButton.titleFont = UIFont.systemFont(ofSize: 15)
         dialog.addButtons([cancelButton , okButton])
-        dialog.buttonAlignment = .Horizontal
-        self.presentViewController(dialog, animated: true, completion: {
+        dialog.buttonAlignment = .horizontal
+        self.present(dialog, animated: true, completion: {
             
         })
     }
     
     func changeSegmentControl() {
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
-            emptyView.hidden = true
-            let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-            let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
+            emptyView.isHidden = true
+            let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+            let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
             if overrunOption.characters.count == 0 {
                 approvalRequired = info["ApprovalRequired"] as! Bool
                 overrunOption = info["OverrunOption"] as! String
                 if approvalRequired && overrunOption == "WarningAndAuthorize" {
                     self.navigationItem.title = "审批授权"
-                    segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
-                    segmentedControl.insertSegmentWithTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", atIndex: 3, animated: false)
-                    segmentedControl.insertSegmentWithTitle("已授权", atIndex: 4, animated: false)
+                    segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
+                    segmentedControl.insertSegment(withTitle: "待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", at: 3, animated: false)
+                    segmentedControl.insertSegment(withTitle: "已授权", at: 4, animated: false)
                     indicatorWidthLConstraint.constant = SCREENWIDTH / 5
                     segmentItemWidth = SCREENWIDTH / 5
                     status = 1
@@ -519,19 +544,19 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 }else if overrunOption == "WarningAndAuthorize" {
                     self.navigationItem.title = "授权"
                     indicatorWidthLConstraint.constant = SCREENWIDTH / 2
-                    segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAtIndex: 0)
-                    segmentedControl.setTitle("已授权", forSegmentAtIndex: 1)
-                    segmentedControl.removeSegmentAtIndex(2, animated: false)
+                    segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAt: 0)
+                    segmentedControl.setTitle("已授权", forSegmentAt: 1)
+                    segmentedControl.removeSegment(at: 2, animated: false)
                     segmentItemWidth = SCREENWIDTH / 2
                     status = 2
                     segmentedControl.selectedSegmentIndex = 0
                 }else{
                     self.navigationItem.title = "审批"
-                    segmentedControl.hidden = true
-                    indicatorImageView.hidden = true
-                    lineImageView.hidden = true
-                    tableView.hidden = true
-                    emptyView.hidden = false
+                    segmentedControl.isHidden = true
+                    indicatorImageView.isHidden = true
+                    lineImageView.isHidden = true
+                    tableView.isHidden = true
+                    emptyView.isHidden = false
                 }
             }else{
                 let approval = info["ApprovalRequired"] as! Bool
@@ -539,77 +564,77 @@ class ApprovalListViewController: UIViewController , UITableViewDataSource , UIT
                 if approval != approvalRequired || overrun != overrunOption {
                     if approval && overrun == "WarningAndAuthorize" {
                         self.navigationItem.title = "审批授权"
-                        segmentedControl.hidden = false
-                        indicatorImageView.hidden = false
-                        lineImageView.hidden = false
-                        tableView.hidden = false
+                        segmentedControl.isHidden = false
+                        indicatorImageView.isHidden = false
+                        lineImageView.isHidden = false
+                        tableView.isHidden = false
                         indicatorWidthLConstraint.constant = SCREENWIDTH / 5
                         segmentItemWidth = SCREENWIDTH / 5
                         status = 1
                         if segmentedControl.numberOfSegments == 5 {
                             
                         }else if segmentedControl.numberOfSegments == 3 {
-                            segmentedControl.insertSegmentWithTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", atIndex: 3, animated: false)
-                            segmentedControl.insertSegmentWithTitle("已授权", atIndex: 4, animated: false)
+                            segmentedControl.insertSegment(withTitle: "待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", at: 3, animated: false)
+                            segmentedControl.insertSegment(withTitle: "已授权", at: 4, animated: false)
                         }else if segmentedControl.numberOfSegments == 2{
-                            segmentedControl.setTitle("我发起", forSegmentAtIndex: 0)
-                            segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
-                            segmentedControl.insertSegmentWithTitle("已审", atIndex: 2, animated: false)
-                            segmentedControl.insertSegmentWithTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", atIndex: 3, animated: false)
-                            segmentedControl.insertSegmentWithTitle("已授权", atIndex: 4, animated: false)
+                            segmentedControl.setTitle("我发起", forSegmentAt: 0)
+                            segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
+                            segmentedControl.insertSegment(withTitle: "已审", at: 2, animated: false)
+                            segmentedControl.insertSegment(withTitle: "待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", at: 3, animated: false)
+                            segmentedControl.insertSegment(withTitle: "已授权", at: 4, animated: false)
                         }
                         segmentedControl.selectedSegmentIndex = 0
                     }else if approval && overrun != "WarningAndAuthorize" {
                         self.navigationItem.title = "审批"
-                        segmentedControl.hidden = false
-                        indicatorImageView.hidden = false
-                        lineImageView.hidden = false
-                        tableView.hidden = false
+                        segmentedControl.isHidden = false
+                        indicatorImageView.isHidden = false
+                        lineImageView.isHidden = false
+                        tableView.isHidden = false
                         indicatorWidthLConstraint.constant = SCREENWIDTH / 3
                         segmentItemWidth = SCREENWIDTH / 3
                         status = 0
                         if segmentedControl.numberOfSegments == 5 {
-                            segmentedControl.removeSegmentAtIndex(4, animated: false)
-                            segmentedControl.removeSegmentAtIndex(3, animated: false)
+                            segmentedControl.removeSegment(at: 4, animated: false)
+                            segmentedControl.removeSegment(at: 3, animated: false)
                         }else if segmentedControl.numberOfSegments == 3 {
                             
                         }else if segmentedControl.numberOfSegments == 2{
-                            segmentedControl.setTitle("我发起", forSegmentAtIndex: 0)
-                            segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAtIndex: 1)
-                            segmentedControl.insertSegmentWithTitle("已审", atIndex: 2, animated: false)
+                            segmentedControl.setTitle("我发起", forSegmentAt: 0)
+                            segmentedControl.setTitle("待审\(approvalCount > 0 ? "(\(approvalCount))" : "")", forSegmentAt: 1)
+                            segmentedControl.insertSegment(withTitle: "已审", at: 2, animated: false)
                         }
                         segmentedControl.selectedSegmentIndex = 0
                     }else if overrun == "WarningAndAuthorize" {
                         self.navigationItem.title = "授权"
-                        segmentedControl.hidden = false
-                        indicatorImageView.hidden = false
-                        lineImageView.hidden = false
-                        tableView.hidden = false
+                        segmentedControl.isHidden = false
+                        indicatorImageView.isHidden = false
+                        lineImageView.isHidden = false
+                        tableView.isHidden = false
                         indicatorWidthLConstraint.constant = SCREENWIDTH / 2
                         segmentItemWidth = SCREENWIDTH / 2
                         status = 2
                         if segmentedControl.numberOfSegments == 5 {
-                            segmentedControl.removeSegmentAtIndex(4, animated: false)
-                            segmentedControl.removeSegmentAtIndex(3, animated: false)
-                            segmentedControl.removeSegmentAtIndex(2, animated: false)
+                            segmentedControl.removeSegment(at: 4, animated: false)
+                            segmentedControl.removeSegment(at: 3, animated: false)
+                            segmentedControl.removeSegment(at: 2, animated: false)
                         }else if segmentedControl.numberOfSegments == 3 {
-                            segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAtIndex: 0)
-                            segmentedControl.setTitle("已授权", forSegmentAtIndex: 1)
-                            segmentedControl.removeSegmentAtIndex(2, animated: false)
+                            segmentedControl.setTitle("待授权\(authorizeCount > 0 ? "(\(authorizeCount))" : "")", forSegmentAt: 0)
+                            segmentedControl.setTitle("已授权", forSegmentAt: 1)
+                            segmentedControl.removeSegment(at: 2, animated: false)
                         }else if segmentedControl.numberOfSegments == 2{
                             
                         }
                         segmentedControl.selectedSegmentIndex = 0
                     }else{
                         self.navigationItem.title = "审批"
-                        segmentedControl.hidden = true
-                        indicatorImageView.hidden = true
-                        lineImageView.hidden = true
-                        tableView.hidden = true
+                        segmentedControl.isHidden = true
+                        indicatorImageView.isHidden = true
+                        lineImageView.isHidden = true
+                        tableView.isHidden = true
                         pageNumber = 1
                         arrApproval.removeAll()
                         tableView.reloadData()
-                        emptyView.hidden = false
+                        emptyView.isHidden = false
                     }
                     
                 }

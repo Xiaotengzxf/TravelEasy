@@ -18,7 +18,7 @@ class CityButton: UIButton {
         self.layer.masksToBounds = true
         //添加变宽
         self.layer.borderWidth = 1
-        self.layer.borderColor = UIColor.hexStringToColor("e0e1e2").CGColor
+        self.layer.borderColor = UIColor.hexStringToColor("e0e1e2").cgColor
         
     }
 

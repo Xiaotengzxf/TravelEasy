@@ -34,7 +34,7 @@ class ConfirmOrderViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func closeAlertView(sender: AnyObject) {
+    @IBAction func closeAlertView(_ sender: AnyObject) {
         popupDidalog.dismiss()
     }
 

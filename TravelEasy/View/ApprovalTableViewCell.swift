@@ -23,7 +23,7 @@ class ApprovalTableViewCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -31,21 +31,21 @@ class ApprovalTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        cancelButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        cancelButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        cancelButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        cancelButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTONBGCOLORHIGHLIGHT), forState: .Highlighted)
+        cancelButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        cancelButton.setTitleColor(UIColor.white, for: .highlighted)
+        cancelButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        cancelButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTONBGCOLORHIGHLIGHT), for: .highlighted)
     }
 
-    @IBAction func showApprovalDetail(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 2, userInfo: ["tag" : tag])
+    @IBAction func showApprovalDetail(_ sender: AnyObject) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 2, userInfo: ["tag" : tag])
     }
     
-    @IBAction func cancelApproval(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 1, userInfo: ["tag" : tag ,"eventTag" : 0])
+    @IBAction func cancelApproval(_ sender: AnyObject) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 1, userInfo: ["tag" : tag ,"eventTag" : 0])
     }
-    @IBAction func allowApproval(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 1, userInfo: ["tag" : tag ,"eventTag" : 1])
+    @IBAction func allowApproval(_ sender: AnyObject) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 1, userInfo: ["tag" : tag ,"eventTag" : 1])
     }
 }

@@ -14,10 +14,10 @@ class NotificationManager {
     static let installShared = NotificationManager()
     
     func play() {
-        let sound = NSUserDefaults.standardUserDefaults().boolForKey("sound")
-        let vibrate = NSUserDefaults.standardUserDefaults().boolForKey("vibrate")
-        let notificationSound = NSUserDefaults.standardUserDefaults().boolForKey("notificationSound")
-        let notificationVibrate = NSUserDefaults.standardUserDefaults().boolForKey("notificationVibrate")
+        let sound = UserDefaults.standard.bool(forKey: "sound")
+        let vibrate = UserDefaults.standard.bool(forKey: "vibrate")
+        let notificationSound = UserDefaults.standard.bool(forKey: "notificationSound")
+        let notificationVibrate = UserDefaults.standard.bool(forKey: "notificationVibrate")
         if notificationVibrate || notificationSound {
             if sound && vibrate {
                 
@@ -25,9 +25,9 @@ class NotificationManager {
                 if notificationVibrate && vibrate {
                     AudioServicesPlayAlertSound(kSystemSoundID_Vibrate)
                 }else if notificationSound && sound {
-                    if let path = NSBundle(identifier: "com.apple.UIKit")?.pathForResource("sms-received2", ofType: "caf") {
+                    if let path = Bundle(identifier: "com.apple.UIKit")?.path(forResource: "sms-received2", ofType: "caf") {
                         var soundID : SystemSoundID = 0
-                        let error = AudioServicesCreateSystemSoundID(NSURL(fileURLWithPath: path), &soundID)
+                        let error = AudioServicesCreateSystemSoundID(URL(fileURLWithPath: path) as CFURL, &soundID)
                         if error == kAudioServicesNoError {
                             AudioServicesPlayAlertSound(soundID)
                         }
@@ -35,7 +35,7 @@ class NotificationManager {
                     }else{
                         let path = "/System/Library/Audio/UISounds/sms-received2.caf"
                         var soundID : SystemSoundID = 0
-                        let error = AudioServicesCreateSystemSoundID(NSURL(fileURLWithPath: path), &soundID)
+                        let error = AudioServicesCreateSystemSoundID(URL(fileURLWithPath: path) as CFURL, &soundID)
                         if error == kAudioServicesNoError {
                             AudioServicesPlayAlertSound(soundID)
                         }

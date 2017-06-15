@@ -25,18 +25,18 @@ class ToAirlineViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let departureDateTime = flightInfo["Departure" , "DateTime"].string where departureDateTime.characters.count > 10 {
-            let dateAndTime = departureDateTime.componentsSeparatedByString(" ")
-            let date = dateAndTime[0].componentsSeparatedByString("-").map{UInt($0)}
-            let calendar = XZCalendarModel.calendarDayWithYear(date[0]!, month: date[1]!, day: date[2]!)
-            goDateLabel.text = "\(calendar.month > 9 ? "\(calendar.month)" : "0\(calendar.month)")月\(calendar.day > 9 ? "\(calendar.day)" : "0\(calendar.day)")日\(calendar.getWeek())"
+        if let departureDateTime = flightInfo["Departure" , "DateTime"].string, departureDateTime.characters.count > 10 {
+            let dateAndTime = departureDateTime.components(separatedBy: " ")
+            let date = dateAndTime[0].components(separatedBy: "-").map{UInt($0)}
+            let calendar = XZCalendarModel.calendarDay(withYear: date[0]!, month: date[1]!, day: date[2]!)
+            goDateLabel.text = "\((calendar?.month)! > 9 ? "\(calendar?.month)" : "0\(calendar?.month)")月\((calendar?.day)! > 9 ? "\(calendar?.day)" : "0\(calendar?.day)")日\(calendar?.getWeek()!)"
             goTimeLabel.text = dateAndTime[1]
         }
-        if let departureDateTime = flightInfo["Arrival" , "DateTime"].string where departureDateTime.characters.count > 10 {
-            let dateAndTime = departureDateTime.componentsSeparatedByString(" ")
-            let date = dateAndTime[0].componentsSeparatedByString("-").map{UInt($0)}
-            let calendar = XZCalendarModel.calendarDayWithYear(date[0]!, month: date[1]!, day: date[2]!)
-            backDateLabel.text = "\(calendar.month > 9 ? "\(calendar.month)" : "0\(calendar.month)")月\(calendar.day > 9 ? "\(calendar.day)" : "0\(calendar.day)")日\(calendar.getWeek())"
+        if let departureDateTime = flightInfo["Arrival" , "DateTime"].string, departureDateTime.characters.count > 10 {
+            let dateAndTime = departureDateTime.components(separatedBy: " ")
+            let date = dateAndTime[0].components(separatedBy: "-").map{UInt($0)}
+            let calendar = XZCalendarModel.calendarDay(withYear: date[0]!, month: date[1]!, day: date[2]!)
+            backDateLabel.text = "\((calendar?.month)! > 9 ? "\(calendar?.month)" : "0\(calendar?.month)")月\((calendar?.day)! > 9 ? "\(calendar?.day)" : "0\(calendar?.day)")日\(calendar?.getWeek()!)"
             backTimeLabel.text = dateAndTime[1]
         }
         goAirportLabel.text = "\(flightInfo["Departure" , "AirportName"].stringValue)机场\(flightInfo["Departure" , "Terminal"].stringValue)"
@@ -50,7 +50,7 @@ class ToAirlineViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func closeDialog(sender: AnyObject) {
+    @IBAction func closeDialog(_ sender: AnyObject) {
         popupDialog.dismiss()
     }
 

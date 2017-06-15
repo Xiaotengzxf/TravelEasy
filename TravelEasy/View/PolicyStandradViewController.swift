@@ -29,7 +29,7 @@ class PolicyStandradViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func closeView(sender: AnyObject) {
+    @IBAction func closeView(_ sender: AnyObject) {
         popupDidalog?.dismiss()
     }
     /*

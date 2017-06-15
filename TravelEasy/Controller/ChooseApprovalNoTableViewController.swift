@@ -9,7 +9,7 @@
 import UIKit
 import SwiftyJSON
 import MBProgressHUD
-import JLToast
+import Toaster
 
 class ChooseApprovalNoTableViewController: UITableViewController {
     
@@ -32,19 +32,19 @@ class ChooseApprovalNoTableViewController: UITableViewController {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.getRequest(manager.getApprovals, params: [ "start" : flightInfo["Departure" , "DateTime"].stringValue , "end" : flightInfo["Arrival" , "DateTime"].stringValue , "pageSize" : 1000 , "pageNumber" : 1 , "travelEmployeeId" : employeeId], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.getRequest(manager.getApprovals, params: [ "start" : flightInfo["Departure" , "DateTime"].stringValue as AnyObject , "end" : flightInfo["Arrival" , "DateTime"].stringValue as AnyObject , "pageSize" : 1000 as AnyObject , "pageNumber" : 1 as AnyObject , "travelEmployeeId" : employeeId as AnyObject], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.approvals += model["Approvals"].arrayValue
                         self?.tableView.reloadData()
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
@@ -52,13 +52,13 @@ class ChooseApprovalNoTableViewController: UITableViewController {
 
     // MARK: - Table view data source
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return approvals.count
     }
 
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let approvalNoLabel  = cell.contentView.viewWithTag(1) as! UILabel
         let cityLabel = cell.contentView.viewWithTag(2) as! UILabel
         let dateLabel = cell.contentView.viewWithTag(3) as! UILabel
@@ -66,13 +66,13 @@ class ChooseApprovalNoTableViewController: UITableViewController {
         cityLabel.text = approvals[indexPath.row]["TravelDestination"].string
         dateLabel.text = "\(approvals[indexPath.row]["TravelDateStart"].stringValue)至\(approvals[indexPath.row]["TravelDateEnd"].stringValue)"
         cell.accessoryView = UIImageView(image: UIImage(named: "icon_radio_un"))
-        cell.selectionStyle = .None
+        cell.selectionStyle = .none
         return cell
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
-        let cell = tableView.cellForRowAtIndexPath(indexPath)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let cell = tableView.cellForRow(at: indexPath)
         let approvalNoLabel  = cell?.contentView.viewWithTag(1) as! UILabel
         let cityLabel = cell?.contentView.viewWithTag(2) as! UILabel
         let dateLabel = cell?.contentView.viewWithTag(3) as! UILabel
@@ -80,16 +80,16 @@ class ChooseApprovalNoTableViewController: UITableViewController {
         cityLabel.textColor = UIColor.hexStringToColor(TEXTCOLOR)
         dateLabel.textColor = UIColor.hexStringToColor(TEXTCOLOR)
         cell?.accessoryView = UIImageView(image: UIImage(named: "icon_radio_pr"))
-        self.performSelector(#selector(ChooseApprovalNoTableViewController.chooseApprovalSuccess(_:)), withObject: indexPath, afterDelay: 0.2)
+        self.perform(#selector(ChooseApprovalNoTableViewController.chooseApprovalSuccess(_:)), with: indexPath, afterDelay: 0.2)
     }
 
-    func chooseApprovalSuccess(indexPath : NSIndexPath)  {
+    func chooseApprovalSuccess(_ indexPath : IndexPath)  {
         delegate?.chooseApprovalNoWithJSON(approvals[indexPath.row])
-        self.navigationController?.popViewControllerAnimated(true)
+        self.navigationController?.popViewController(animated: true)
         
     }
 }
 
 protocol ChooseApprovalNoTableViewControllerDelegate {
-    func chooseApprovalNoWithJSON(approval : JSON)
+    func chooseApprovalNoWithJSON(_ approval : JSON)
 }

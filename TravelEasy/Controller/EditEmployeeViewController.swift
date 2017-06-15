@@ -9,7 +9,31 @@
 import UIKit
 import SwiftyJSON
 import MBProgressHUD
-import JLToast
+import Toaster
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func <= <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l <= r
+  default:
+    return !(rhs < lhs)
+  }
+}
+
 
 class EditEmployeeViewController: UIViewController , ChooseProjectTableViewControllerDelegate , ChooseApprovalNoTableViewControllerDelegate {
 
@@ -50,29 +74,29 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             approvalRequired = info["ApprovalRequired"] as? Bool ?? false
             isProjectRequired = info["IsProjectRequired"] as? Bool ?? false
             isGreenChannel = info["IsGreenChannel"] as? Bool ?? false
             canBookingForOthers = info["CanBookingForOthers"] as? Bool ?? false
             userId = info["EmployeeId"] as? Int ?? 0
             if !approvalRequired {
-                approvalView.hidden = true
-                lineImageView.hidden = true
+                approvalView.isHidden = true
+                lineImageView.isHidden = true
                 if isProjectRequired {
                     lineImageViewBottomLConstraint.constant = -45
                 }else{
-                    projectView.hidden = true
+                    projectView.isHidden = true
                 }
             }else{
                 if !isProjectRequired {
-                    lineImageView.hidden = true
-                    projectView.hidden = true
+                    lineImageView.isHidden = true
+                    projectView.isHidden = true
                 }
             }
             if isGreenChannel {
-                approvalView.hidden = true
-                lineImageView.hidden = true
+                approvalView.isHidden = true
+                lineImageView.isHidden = true
                 lineImageViewBottomLConstraint.constant = -45
             }
         }
@@ -84,7 +108,7 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
                 employeeNameLabel.text = employee["EmployeeName"].string
                 departmentLabel.text = employee["DepartmentName"].string
                 mobileTextField.text = employee["Mobile"].string
-                chooseUserNameButton.hidden = true
+                chooseUserNameButton.isHidden = true
                 if approvalRequired {
                     approval = employee["approval"]
                     if approval != nil {
@@ -122,12 +146,12 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
             addEnterpriseUserViewBottomConstraint.constant = -44
         }
         if isEnterpriseUser {
-            chooseUserNameButton.hidden = true
+            chooseUserNameButton.isHidden = true
             addEnterpriseUserViewBottomConstraint.constant = -44
         }else{
-            tfUserName.hidden = true
+            tfUserName.isHidden = true
         }
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(EditEmployeeViewController.handleNotification(_:)), name: "EditEmployeeViewController", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(EditEmployeeViewController.handleNotification(_:)), name: NSNotification.Name(rawValue: "EditEmployeeViewController"), object: nil)
     }
     
     func refreshUserView()  {
@@ -156,10 +180,10 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    func handleNotification(sender : NSNotification ) {
+    func handleNotification(_ sender : Notification ) {
         if let tag = sender.object as? Int {
             if tag == 1 {
                 if let row = sender.userInfo?["row"] as? Int {
@@ -194,12 +218,12 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
         }
     }
     
-    @IBAction func chooseEmployee(sender: AnyObject) {
+    @IBAction func chooseEmployee(_ sender: AnyObject) {
         tfUserName.resignFirstResponder()
         credentialNoTextfield.resignFirstResponder()
         let button = sender as! UIButton
         if button.tag == 1 {
-            let controller = self.storyboard?.instantiateViewControllerWithIdentifier("EditEmployee") as! EditEmployeeViewController
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "EditEmployee") as! EditEmployeeViewController
             controller.isEnterpriseUser = true
             controller.title = "企业客户"
             controller.isUser = false
@@ -207,11 +231,11 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
             controller.flightInfo = flightInfo
             self.navigationController?.pushViewController(controller, animated: true)
         }else{
-            self.performSegueWithIdentifier("toAddressBook", sender: self)
+            self.performSegue(withIdentifier: "toAddressBook", sender: self)
         }
     }
 
-    @IBAction func chooseCredentialType(sender: AnyObject) {
+    @IBAction func chooseCredentialType(_ sender: AnyObject) {
         tfUserName.resignFirstResponder()
         credentialNoTextfield.resignFirstResponder()
         if certTypes.count > 0 {
@@ -221,18 +245,18 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
             let hud = showHUD()
             if let token = manager.validateToken() {
                 manager.getRequest(manager.getCertTypes, params: nil, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                    hud.hideAnimated(true)
+                    hud.hide(animated: true)
                     if let json = jsonObject {
-                        if let code = json["Code"].int where code == 0 {
+                        if let code = json["Code"].int, code == 0 {
                             self!.certTypes += json["CertTypes"].arrayValue
                             self!.chooseCertType()
                         }else{
                             if let message = json["Message"].string {
-                                JLToast.makeText(message).show()
+                                Toast(text: message).show()
                             }
                         }
                     }else{
-                        JLToast.makeText("网络不给力，请检查网络!").show()
+                        Toast(text: "网络不给力，请检查网络!").show()
                     }
                 })
             }
@@ -243,36 +267,36 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
      选择证件类型
      */
     func chooseCertType() {
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("BunkList") as! BunkListViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "BunkList") as! BunkListViewController
         let bunks = certTypes.map{$0.stringValue}
-        if let text = credentialTypeLabel.text where text.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count > 0 && selectedRow == 0 {
-            let index = bunks.indexOf(text)
+        if let text = credentialTypeLabel.text, text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).characters.count > 0 && selectedRow == 0 {
+            let index = bunks.index(of: text)
             selectedRow = index ?? 0
         }
         controller.selectedRow = selectedRow
         controller.bunks = bunks
-        controller.modalPresentationStyle = .OverCurrentContext
-        controller.modalTransitionStyle = .CrossDissolve
+        controller.modalPresentationStyle = .overCurrentContext
+        controller.modalTransitionStyle = .crossDissolve
         controller.flag = 3
-        self.presentViewController(controller, animated: true, completion: {
+        self.present(controller, animated: true, completion: {
             
         })
     }
     
-    @IBAction func chooseApprovalNo(sender: AnyObject) {
+    @IBAction func chooseApprovalNo(_ sender: AnyObject) {
         if !isEnterpriseUser {
             if employee != nil {
                 
             }else{
-                JLToast.makeText("请先选择乘机人").show()
+                Toast(text: "请先选择乘机人").show()
                 return
             }
         }
-        self.performSegueWithIdentifier("toChooseApprovalNo", sender: self)
+        self.performSegue(withIdentifier: "toChooseApprovalNo", sender: self)
     }
     
-    @IBAction func chooseProject(sender: AnyObject) {
-        self.performSegueWithIdentifier("toChooseProject", sender: self)
+    @IBAction func chooseProject(_ sender: AnyObject) {
+        self.performSegue(withIdentifier: "toChooseProject", sender: self)
     }
     
     /**
@@ -280,33 +304,33 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
      
      - parameter sender: 按钮
      */
-    @IBAction func finishedEdit(sender: AnyObject) {
+    @IBAction func finishedEdit(_ sender: AnyObject) {
         tfUserName.resignFirstResponder()
         credentialNoTextfield.resignFirstResponder()
-        if (tfUserName.text == nil || tfUserName.text!.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count == 0) && isEnterpriseUser  {
-            JLToast.makeText("请输入乘机人").show()
+        if (tfUserName.text == nil || tfUserName.text!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).characters.count == 0) && isEnterpriseUser  {
+            Toast(text: "请输入乘机人").show()
             return
         }else if !isEnterpriseUser && (employeeNameLabel.text?.characters.count == 0) {
-            JLToast.makeText("请选择乘机人").show()
+            Toast(text: "请选择乘机人").show()
             return
         }else if credentialTypeLabel.text?.characters.count <= 0 {
-            JLToast.makeText("请选择证件类型").show()
+            Toast(text: "请选择证件类型").show()
             return
         }else if credentialNoTextfield.text?.characters.count <= 0 {
-            JLToast.makeText("请填写证件号码").show()
+            Toast(text: "请填写证件号码").show()
             return
         }else if departmentLabel.text?.characters.count <= 0 || departmentLabel.text == "必选" {
-            JLToast.makeText("请选择所属部门").show()
+            Toast(text: "请选择所属部门").show()
             return
         }else {
             if !isGreenChannel {
                 if approvalRequired && !(approval != nil) {
-                    JLToast.makeText("请选择审批单号").show()
+                    Toast(text: "请选择审批单号").show()
                     return
                 }
             }
             if isProjectRequired && !(project != nil) {
-                JLToast.makeText("请选择所属项目").show()
+                Toast(text: "请选择所属项目").show()
                 return
             }
         }
@@ -314,24 +338,24 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
             employee = JSON(["DefaultCertNo" : "","DefaultCertType" : "" , "DepartmentId" : departmentId ,"DepartmentName" : "\(departmentLabel.text ?? "")","Email" : "" ,"EmployeeId" : 0 ,"EmployeeName" : "\(tfUserName.text ?? "")" ,"Gender" : "" ,"Mobile" : "\(mobileTextField.text ?? "")" ,"WorkNo" : ""
             ])
         }else{
-            if let mobile = mobileTextField.text where mobile.characters.count > 0 {
+            if let mobile = mobileTextField.text, mobile.characters.count > 0 {
                 if var dict = employee.dictionaryObject {
                     dict["Mobile"] = mobile
                     employee = JSON(dict)
                 }
             }
         }
-        var userInfo : [String : AnyObject] = [ "credentialType" : credentialTypeLabel.text ?? "" , "credentialNo" : credentialNoTextfield.text ?? "" , "isUser" : isUser , "isEdit" : isEdit , "index" : index]
+        var userInfo : [String : AnyObject] = [ "credentialType" : credentialTypeLabel.text as AnyObject ?? "" as AnyObject , "credentialNo" : credentialNoTextfield.text as AnyObject ?? "" as AnyObject , "isUser" : isUser as AnyObject , "isEdit" : isEdit as AnyObject , "index" : index as AnyObject]
         if employee != nil {
-            userInfo["employee"] = employee.object
+            userInfo["employee"] = employee.object as AnyObject
         }
         if approval != nil {
-            userInfo["approval"] = approval.object
+            userInfo["approval"] = approval.object as AnyObject
         }
         if project != nil {
-            userInfo["project"] = project.object
+            userInfo["project"] = project.object as AnyObject
         }
-        NSNotificationCenter.defaultCenter().postNotificationName("WriteOrderViewController", object: 1, userInfo: userInfo)
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "WriteOrderViewController"), object: 1, userInfo: userInfo)
         for viewController in self.navigationController!.viewControllers {
             if viewController is WriteOrderViewController {
                 self.navigationController?.popToViewController(viewController, animated: true)
@@ -341,10 +365,10 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
     
     // MARK: - Navigation
 
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let controller = segue.destinationViewController as? ChooseProjectTableViewController {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let controller = segue.destination as? ChooseProjectTableViewController {
             controller.delegate = self
-        }else if let controller = segue.destinationViewController as? ChooseApprovalNoTableViewController {
+        }else if let controller = segue.destination as? ChooseApprovalNoTableViewController {
             controller.delegate = self
             controller.flightInfo = flightInfo
             if isUser {
@@ -360,20 +384,20 @@ class EditEmployeeViewController: UIViewController , ChooseProjectTableViewContr
     }
     
     // MARK: - ChooseProject TableView Controller Delegate
-    func chooseProjectWithJSON(project: JSON) {
+    func chooseProjectWithJSON(_ project: JSON) {
         projectNameLabel.text = project["ProjectName"].string
         self.project = project
     }
     
-    func chooseApprovalNoWithJSON(approval: JSON) {
+    func chooseApprovalNoWithJSON(_ approval: JSON) {
         approvalNoLabel.text = approval["ApprovalNo"].string
         self.approval = approval
     }
     
-    @IBAction func chooseDepartment(sender: AnyObject) {
+    @IBAction func chooseDepartment(_ sender: AnyObject) {
         tfUserName.resignFirstResponder()
         credentialNoTextfield.resignFirstResponder()
-        self.performSegueWithIdentifier("toDepartmentList", sender: self)
+        self.performSegue(withIdentifier: "toDepartmentList", sender: self)
     }
     
 }

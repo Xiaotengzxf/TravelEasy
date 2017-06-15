@@ -19,34 +19,34 @@ class PushManagerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.currentNotificationCenter().getNotificationSettingsWithCompletionHandler({[weak self] (settings) in
-                if settings.authorizationStatus == .Authorized {
+            UNUserNotificationCenter.current().getNotificationSettings(completionHandler: {[weak self] (settings) in
+                if settings.authorizationStatus == .authorized {
                     self?.pushStateLabel.text = "已开启"
-                }else if settings.authorizationStatus == .Denied {
+                }else if settings.authorizationStatus == .denied {
                     self?.pushStateLabel.text = "已关闭"
-                    self?.propertyView.hidden = true
+                    self?.propertyView.isHidden = true
                 }else{
                     self?.pushStateLabel.text = "待开启"
-                    self?.propertyView.hidden = true
+                    self?.propertyView.isHidden = true
                 }
             })
         }else{
-            if UIApplication.sharedApplication().isRegisteredForRemoteNotifications() {
+            if UIApplication.shared.isRegisteredForRemoteNotifications {
                 pushStateLabel.text = "已开启"
             }else{
                 pushStateLabel.text = "待开启"
-                propertyView.hidden = true
+                propertyView.isHidden = true
             }
         }
-        let sound = NSUserDefaults.standardUserDefaults().boolForKey("sound")
-        let vibrate = NSUserDefaults.standardUserDefaults().boolForKey("vibrate")
-        let notificationSound = NSUserDefaults.standardUserDefaults().boolForKey("notificationSound")
-        let notificationVibrate = NSUserDefaults.standardUserDefaults().boolForKey("notificationVibrate")
+        let sound = UserDefaults.standard.bool(forKey: "sound")
+        let vibrate = UserDefaults.standard.bool(forKey: "vibrate")
+        let notificationSound = UserDefaults.standard.bool(forKey: "notificationSound")
+        let notificationVibrate = UserDefaults.standard.bool(forKey: "notificationVibrate")
         if notificationSound {
-            soundSwitch.on = sound
+            soundSwitch.isOn = sound
         }
         if notificationVibrate {
-            shakeSwitch.on = vibrate
+            shakeSwitch.isOn = vibrate
         }
     }
 
@@ -55,16 +55,16 @@ class PushManagerViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func changeSound(sender: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setBool(true, forKey: "notificationSound")
-        NSUserDefaults.standardUserDefaults().setBool(soundSwitch.on, forKey: "sound")
-        NSUserDefaults.standardUserDefaults().synchronize()
+    @IBAction func changeSound(_ sender: AnyObject) {
+        UserDefaults.standard.set(true, forKey: "notificationSound")
+        UserDefaults.standard.set(soundSwitch.isOn, forKey: "sound")
+        UserDefaults.standard.synchronize()
     }
     
-    @IBAction func changeShake(sender: AnyObject) {
-        NSUserDefaults.standardUserDefaults().setBool(true, forKey: "notificationVibrate")
-        NSUserDefaults.standardUserDefaults().setBool(shakeSwitch.on, forKey: "vibrate")
-        NSUserDefaults.standardUserDefaults().synchronize()
+    @IBAction func changeShake(_ sender: AnyObject) {
+        UserDefaults.standard.set(true, forKey: "notificationVibrate")
+        UserDefaults.standard.set(shakeSwitch.isOn, forKey: "vibrate")
+        UserDefaults.standard.synchronize()
     }
     
 

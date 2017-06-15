@@ -12,7 +12,7 @@ class TableViewCell: UITableViewCell {
 
     @IBOutlet weak var cityName: UILabel!
     
-    func setData(cityName:String){
+    func setData(_ cityName:String){
         self.cityName.text = cityName;
     }
     

@@ -20,11 +20,11 @@ class PassengerView: UIView {
     @IBOutlet weak var departmentTipLabel: UILabel!
     
 
-    @IBAction func deletePassenger(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("WriteOrderViewController", object: 3 , userInfo: ["tag" : tag])
+    @IBAction func deletePassenger(_ sender: AnyObject) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "WriteOrderViewController"), object: 3 , userInfo: ["tag" : tag])
     }
 
-    @IBAction func detailPasseger(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("WriteOrderViewController", object: 2 , userInfo: ["tag" : tag])
+    @IBAction func detailPasseger(_ sender: AnyObject) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "WriteOrderViewController"), object: 2 , userInfo: ["tag" : tag])
     }
 }

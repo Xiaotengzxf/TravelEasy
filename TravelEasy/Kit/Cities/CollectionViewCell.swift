@@ -12,7 +12,7 @@ class CollectionViewCell: UICollectionViewCell {
 
     @IBOutlet weak var cityLabel: UILabel!
     
-    func addData(city : [String : AnyObject]){
+    func addData(_ city : [String : AnyObject]){
         
         cityLabel.text = city["Name"] as? String
         

@@ -22,79 +22,79 @@ class BunkTypeSelectView: UIView , UITableViewDataSource , UITableViewDelegate {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = UIColor.blackColor().colorWithAlphaComponent(0.5)
+        self.backgroundColor = UIColor.black.withAlphaComponent(0.5)
     }
     
     func show() {
-        self.hidden = false
+        self.isHidden = false
         if tableView == nil {
-            tableView = UITableView(frame: CGRectZero, style: .Plain)
+            tableView = UITableView(frame: CGRect.zero, style: .plain)
             tableView.dataSource = self
             tableView.delegate = self
             tableView.translatesAutoresizingMaskIntoConstraints = false
-            tableView.scrollEnabled = false
+            tableView.isScrollEnabled = false
             tableView.bounces = false
             self.addSubview(tableView)
             
-            self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[tableView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["tableView" : tableView]))
-            self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[tableView(132)]", options: .DirectionLeadingToTrailing, metrics: nil, views: ["tableView" : tableView]))
-            constraint = NSLayoutConstraint(item: tableView, attribute: .Top, relatedBy: .Equal, toItem: self, attribute: .Bottom, multiplier: 1, constant: 0)
+            self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[tableView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["tableView" : tableView]))
+            self.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:[tableView(132)]", options: NSLayoutFormatOptions(), metrics: nil, views: ["tableView" : tableView]))
+            constraint = NSLayoutConstraint(item: tableView, attribute: .top, relatedBy: .equal, toItem: self, attribute: .bottom, multiplier: 1, constant: 0)
             self.addConstraint(constraint)
         }
-        self.performSelector(#selector(BunkTypeSelectView.showAnimation), withObject: nil, afterDelay: 0.1)
+        self.perform(#selector(BunkTypeSelectView.showAnimation), with: nil, afterDelay: 0.1)
     }
     
     func showAnimation() {
         constraint.constant = -132
-        UIView.animateWithDuration(0.3) {
+        UIView.animate(withDuration: 0.3, animations: {
             self.layoutIfNeeded()
-        }
+        }) 
     }
     
     func hide() {
         constraint.constant = 0
-        UIView.animateWithDuration(0.3, animations: { 
+        UIView.animate(withDuration: 0.3, animations: { 
             self.layoutIfNeeded()
-            }) {[weak self] (finished) in
-                self?.hidden = true
-        }
+            }, completion: {[weak self] (finished) in
+                self?.isHidden = true
+        }) 
     }
     
-    func hideAnimationWithRecognizer(point : CGPoint) {
+    func hideAnimationWithRecognizer(_ point : CGPoint) {
         if !tableView.frame.contains(point) {
             hide()
         }
     }
     
     // MARK : - TableView DataSource
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 3
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCellWithIdentifier("Cell")
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        var cell = tableView.dequeueReusableCell(withIdentifier: "Cell")
         if cell == nil {
-            cell = UITableViewCell(style: .Default, reuseIdentifier: "Cell")
+            cell = UITableViewCell(style: .default, reuseIdentifier: "Cell")
         }
         
         cell?.textLabel?.text = bunks[indexPath.row]
-        cell?.textLabel?.font = UIFont.systemFontOfSize(15)
+        cell?.textLabel?.font = UIFont.systemFont(ofSize: 15)
         cell?.textLabel?.textColor = UIColor.hexStringToColor(FONTCOLOR)
-        cell?.selectionStyle = .None
+        cell?.selectionStyle = .none
         return cell!
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         currentSelectedRow = indexPath.row
-        let cell = tableView.cellForRowAtIndexPath(indexPath)
+        let cell = tableView.cellForRow(at: indexPath)
         cell?.accessoryView = UIImageView(image: UIImage(named: "icon_selcity_seleted"))
         cell?.textLabel?.textColor = UIColor.hexStringToColor("ff6600")
         self.delegate?.bunkTypeSelectedViewWithSelectedRow(currentSelectedRow)
         self.hide()
     }
     
-    func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
-        let cell = tableView.cellForRowAtIndexPath(indexPath)
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let cell = tableView.cellForRow(at: indexPath)
         cell?.accessoryView = nil
         cell?.textLabel?.textColor = UIColor.hexStringToColor(FONTCOLOR)
     }
@@ -104,10 +104,10 @@ class BunkTypeSelectView: UIView , UITableViewDataSource , UITableViewDelegate {
 //        tableView.separatorInset = UIEdgeInsetsZero
 //    }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if touches.count == 1 {
             if let touch = touches.first {
-                hideAnimationWithRecognizer(touch.locationInView(self))
+                hideAnimationWithRecognizer(touch.location(in: self))
             }
         }
     }
@@ -115,5 +115,5 @@ class BunkTypeSelectView: UIView , UITableViewDataSource , UITableViewDelegate {
 }
 
 @objc protocol BunkTypeSelectViewDelegate {
-    func bunkTypeSelectedViewWithSelectedRow(row : NSInteger)
+    func bunkTypeSelectedViewWithSelectedRow(_ row : NSInteger)
 }

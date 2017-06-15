@@ -15,19 +15,19 @@ class MTabBarViewController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MTabBarViewController.handleNotification(_:)), name: "MTabBarViewController", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MTabBarViewController.handleNotification(_:)), name: NSNotification.Name(rawValue: "MTabBarViewController"), object: nil)
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             approvalRequired = info["ApprovalRequired"] as! Bool
             overrunOption = info["OverrunOption"] as! String
         }
         
-        let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-        let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+        let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+        let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
         if let items = tabBar.items {
             if items.count > 1 {
                 var count = 0
@@ -48,23 +48,23 @@ class MTabBarViewController: UITabBarController {
     }
     
     deinit{
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    func handleNotification(sender : NSNotification)  {
+    func handleNotification(_ sender : Notification)  {
         if let tag = sender.object as? Int {
             if tag <= 4 {
                 selectedIndex = tag - 1
                 if tag == 3 {
-                    NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
+                    NotificationCenter.default.post(name: Notification.Name(rawValue: "OrderListTableViewController"), object: 3)
                 }
             }else if tag == 12 {
-                if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+                if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
                     approvalRequired = info["ApprovalRequired"] as! Bool
                     overrunOption = info["OverrunOption"] as! String
                 }
-                let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-                let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+                let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+                let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
                 if let items = tabBar.items {
                     if items.count > 1 {
                         var count = 0
@@ -81,15 +81,15 @@ class MTabBarViewController: UITabBarController {
                     }
                 }
                 if approvalCount > 0 || authorizeCount > 0 {
-                    NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 4)
+                    NotificationCenter.default.post(name: Notification.Name(rawValue: "ApprovalListViewController"), object: 4)
                 }
             }else if tag == 13 {
-                if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+                if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
                     approvalRequired = info["ApprovalRequired"] as! Bool
                     overrunOption = info["OverrunOption"] as! String
                 }
-                let approvalCount = NSUserDefaults.standardUserDefaults().integerForKey("approvalCount")
-                let authorizeCount = NSUserDefaults.standardUserDefaults().integerForKey("authorizeCount")
+                let approvalCount = UserDefaults.standard.integer(forKey: "approvalCount")
+                let authorizeCount = UserDefaults.standard.integer(forKey: "authorizeCount")
                 if let items = tabBar.items {
                     if items.count > 1 {
                         var count = 0
@@ -107,7 +107,7 @@ class MTabBarViewController: UITabBarController {
     }
     
 
-    override func tabBar(tabBar: UITabBar, didSelectItem item: UITabBarItem) {
+    override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
         
     }
     /*

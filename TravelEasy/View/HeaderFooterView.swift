@@ -31,7 +31,7 @@ class HeaderFooterView: UITableViewHeaderFooterView {
         }
     }
     
-    func extandBunks(sender : AnyObject!)  {
+    func extandBunks(_ sender : AnyObject!)  {
         isExtand = !isExtand
         delegate?.headerFooterViewIsExtandBunk(isExtand, tag: tag)
     }
@@ -39,5 +39,5 @@ class HeaderFooterView: UITableViewHeaderFooterView {
 }
 
 @objc protocol HeaderFooterViewDelegate {
-    func headerFooterViewIsExtandBunk(isExtand : Bool , tag : Int)
+    func headerFooterViewIsExtandBunk(_ isExtand : Bool , tag : Int)
 }

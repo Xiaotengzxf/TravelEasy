@@ -15,7 +15,7 @@ class FlightTableViewCell: UITableViewCell {
     @IBOutlet weak var bunkPriceLabel: UILabel!
     @IBOutlet weak var remainNumLabel: UILabel!
     @IBOutlet weak var bookButton: UIButton!
-    var indexPath :NSIndexPath!
+    var indexPath :IndexPath!
     var flag = 0
     
     override func awakeFromNib() {
@@ -23,7 +23,7 @@ class FlightTableViewCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -34,9 +34,9 @@ class FlightTableViewCell: UITableViewCell {
      
      - parameter sender: 按钮
      */
-    @IBAction func returnOrChange(sender: AnyObject) {
+    @IBAction func returnOrChange(_ sender: AnyObject) {
         
-        NSNotificationCenter.defaultCenter().postNotificationName("FlightListViewController\(flag)", object: 1, userInfo: ["indexPath" : indexPath])
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "FlightListViewController\(flag)"), object: 1, userInfo: ["indexPath" : indexPath])
     }
 
     /**
@@ -44,9 +44,9 @@ class FlightTableViewCell: UITableViewCell {
      
      - parameter sender: 按钮
      */
-    @IBAction func bookFlight(sender: AnyObject) {
+    @IBAction func bookFlight(_ sender: AnyObject) {
         
-        NSNotificationCenter.defaultCenter().postNotificationName("FlightListViewController\(flag)", object: 2, userInfo: ["indexPath" : indexPath])
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "FlightListViewController\(flag)"), object: 2, userInfo: ["indexPath" : indexPath])
         
     }
 }

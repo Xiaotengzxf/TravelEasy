@@ -61,8 +61,6 @@
 		893DC4B71D54D54100DAF18A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 893DC4B51D54D54100DAF18A /* Main.storyboard */; };
 		893DC4BA1D54D54100DAF18A /* TravelEasy.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 893DC4B81D54D54100DAF18A /* TravelEasy.xcdatamodeld */; };
 		893DC4BC1D54D54100DAF18A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 893DC4BB1D54D54100DAF18A /* Assets.xcassets */; };
-		893DC4CA1D54D54100DAF18A /* TravelEasyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893DC4C91D54D54100DAF18A /* TravelEasyTests.swift */; };
-		893DC4D51D54D54100DAF18A /* TravelEasyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893DC4D41D54D54100DAF18A /* TravelEasyUITests.swift */; };
 		893ED3E21D5F758A00989976 /* URLCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893ED3E11D5F758A00989976 /* URLCollection.swift */; };
 		893F14BB1D5B747400892DE2 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893F14BA1D5B747400892DE2 /* HomeViewController.swift */; };
 		893F14BD1D5B78FF00892DE2 /* ConstantCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893F14BC1D5B78FF00892DE2 /* ConstantCollection.swift */; };
@@ -95,6 +93,7 @@
 		89BB75BD1DBDEF7100255098 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 89BB75BC1DBDEF7100255098 /* libz.tbd */; };
 		89BB75BF1DBDEF8700255098 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 89BB75BE1DBDEF8700255098 /* UserNotifications.framework */; };
 		89BB75C11DBDEF9300255098 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 89BB75C01DBDEF9300255098 /* libresolv.tbd */; };
+		89DE40BE1EF23F8100697D87 /* TravelEasyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DE40BD1EF23F8100697D87 /* TravelEasyTests.swift */; };
 		89DF699F1D7D7C080078BB75 /* BunkListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DF699E1D7D7C080078BB75 /* BunkListViewController.swift */; };
 		89DF69A11D7E77400078BB75 /* PassengerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DF69A01D7E77400078BB75 /* PassengerView.swift */; };
 		89DF69A31D7E777A0078BB75 /* PassengerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 89DF69A21D7E777A0078BB75 /* PassengerView.xib */; };
@@ -110,14 +109,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		893DC4C61D54D54100DAF18A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 893DC4A61D54D54100DAF18A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 893DC4AD1D54D54100DAF18A;
-			remoteInfo = TravelEasy;
-		};
-		893DC4D11D54D54100DAF18A /* PBXContainerItemProxy */ = {
+		89DE40C01EF23F8100697D87 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 893DC4A61D54D54100DAF18A /* Project object */;
 			proxyType = 1;
@@ -191,10 +183,8 @@
 		893DC4B91D54D54100DAF18A /* TravelEasy.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TravelEasy.xcdatamodel; sourceTree = "<group>"; };
 		893DC4BB1D54D54100DAF18A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		893DC4C01D54D54100DAF18A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		893DC4C51D54D54100DAF18A /* TravelEasyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TravelEasyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		893DC4C91D54D54100DAF18A /* TravelEasyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelEasyTests.swift; sourceTree = "<group>"; };
 		893DC4CB1D54D54100DAF18A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		893DC4D01D54D54100DAF18A /* TravelEasyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TravelEasyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		893DC4D41D54D54100DAF18A /* TravelEasyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelEasyUITests.swift; sourceTree = "<group>"; };
 		893DC4D61D54D54100DAF18A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		893ED3E11D5F758A00989976 /* URLCollection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLCollection.swift; sourceTree = "<group>"; };
@@ -231,6 +221,9 @@
 		89BB75BE1DBDEF8700255098 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		89BB75C01DBDEF9300255098 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		89BB75C21DBDEFB300255098 /* TravelEasy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TravelEasy.entitlements; sourceTree = "<group>"; };
+		89DE40BB1EF23F8100697D87 /* TravelEasyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TravelEasyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		89DE40BD1EF23F8100697D87 /* TravelEasyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelEasyTests.swift; sourceTree = "<group>"; };
+		89DE40BF1EF23F8100697D87 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		89DF699E1D7D7C080078BB75 /* BunkListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BunkListViewController.swift; sourceTree = "<group>"; };
 		89DF69A01D7E77400078BB75 /* PassengerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassengerView.swift; sourceTree = "<group>"; };
 		89DF69A21D7E777A0078BB75 /* PassengerView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PassengerView.xib; sourceTree = "<group>"; };
@@ -268,14 +261,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		893DC4C21D54D54100DAF18A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		893DC4CD1D54D54100DAF18A /* Frameworks */ = {
+		89DE40B81EF23F8100697D87 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -453,6 +439,7 @@
 				893DC4B01D54D54100DAF18A /* TravelEasy */,
 				893DC4C81D54D54100DAF18A /* TravelEasyTests */,
 				893DC4D31D54D54100DAF18A /* TravelEasyUITests */,
+				89DE40BC1EF23F8100697D87 /* TravelEasyTests */,
 				893DC4AF1D54D54100DAF18A /* Products */,
 				2E1B19189CD714384648F0FF /* Pods */,
 				1E66424FA74E26831364FE8C /* Frameworks */,
@@ -463,8 +450,7 @@
 			isa = PBXGroup;
 			children = (
 				893DC4AE1D54D54100DAF18A /* TravelEasy.app */,
-				893DC4C51D54D54100DAF18A /* TravelEasyTests.xctest */,
-				893DC4D01D54D54100DAF18A /* TravelEasyUITests.xctest */,
+				89DE40BB1EF23F8100697D87 /* TravelEasyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -513,6 +499,15 @@
 			name = JPush;
 			sourceTree = "<group>";
 		};
+		89DE40BC1EF23F8100697D87 /* TravelEasyTests */ = {
+			isa = PBXGroup;
+			children = (
+				89DE40BD1EF23F8100697D87 /* TravelEasyTests.swift */,
+				89DE40BF1EF23F8100697D87 /* Info.plist */,
+			);
+			path = TravelEasyTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -536,41 +531,23 @@
 			productReference = 893DC4AE1D54D54100DAF18A /* TravelEasy.app */;
 			productType = "com.apple.product-type.application";
 		};
-		893DC4C41D54D54100DAF18A /* TravelEasyTests */ = {
+		89DE40BA1EF23F8100697D87 /* TravelEasyTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 893DC4DC1D54D54100DAF18A /* Build configuration list for PBXNativeTarget "TravelEasyTests" */;
+			buildConfigurationList = 89DE40C21EF23F8100697D87 /* Build configuration list for PBXNativeTarget "TravelEasyTests" */;
 			buildPhases = (
-				893DC4C11D54D54100DAF18A /* Sources */,
-				893DC4C21D54D54100DAF18A /* Frameworks */,
-				893DC4C31D54D54100DAF18A /* Resources */,
+				89DE40B71EF23F8100697D87 /* Sources */,
+				89DE40B81EF23F8100697D87 /* Frameworks */,
+				89DE40B91EF23F8100697D87 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				893DC4C71D54D54100DAF18A /* PBXTargetDependency */,
+				89DE40C11EF23F8100697D87 /* PBXTargetDependency */,
 			);
 			name = TravelEasyTests;
 			productName = TravelEasyTests;
-			productReference = 893DC4C51D54D54100DAF18A /* TravelEasyTests.xctest */;
+			productReference = 89DE40BB1EF23F8100697D87 /* TravelEasyTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		893DC4CF1D54D54100DAF18A /* TravelEasyUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 893DC4DF1D54D54100DAF18A /* Build configuration list for PBXNativeTarget "TravelEasyUITests" */;
-			buildPhases = (
-				893DC4CC1D54D54100DAF18A /* Sources */,
-				893DC4CD1D54D54100DAF18A /* Frameworks */,
-				893DC4CE1D54D54100DAF18A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				893DC4D21D54D54100DAF18A /* PBXTargetDependency */,
-			);
-			name = TravelEasyUITests;
-			productName = TravelEasyUITests;
-			productReference = 893DC4D01D54D54100DAF18A /* TravelEasyUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -578,14 +555,14 @@
 		893DC4A61D54D54100DAF18A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
+				LastSwiftUpdateCheck = 0830;
 				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "张晓飞";
 				TargetAttributes = {
 					893DC4AD1D54D54100DAF18A = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = 7TJM8AQRLQ;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0830;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -595,14 +572,9 @@
 							};
 						};
 					};
-					893DC4C41D54D54100DAF18A = {
-						CreatedOnToolsVersion = 7.3.1;
-						LastSwiftMigration = 0800;
-						TestTargetID = 893DC4AD1D54D54100DAF18A;
-					};
-					893DC4CF1D54D54100DAF18A = {
-						CreatedOnToolsVersion = 7.3.1;
-						LastSwiftMigration = 0800;
+					89DE40BA1EF23F8100697D87 = {
+						CreatedOnToolsVersion = 8.3.2;
+						ProvisioningStyle = Automatic;
 						TestTargetID = 893DC4AD1D54D54100DAF18A;
 					};
 				};
@@ -621,8 +593,7 @@
 			projectRoot = "";
 			targets = (
 				893DC4AD1D54D54100DAF18A /* TravelEasy */,
-				893DC4C41D54D54100DAF18A /* TravelEasyTests */,
-				893DC4CF1D54D54100DAF18A /* TravelEasyUITests */,
+				89DE40BA1EF23F8100697D87 /* TravelEasyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -652,14 +623,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		893DC4C31D54D54100DAF18A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		893DC4CE1D54D54100DAF18A /* Resources */ = {
+		89DE40B91EF23F8100697D87 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -792,34 +756,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		893DC4C11D54D54100DAF18A /* Sources */ = {
+		89DE40B71EF23F8100697D87 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				893DC4CA1D54D54100DAF18A /* TravelEasyTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		893DC4CC1D54D54100DAF18A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				893DC4D51D54D54100DAF18A /* TravelEasyUITests.swift in Sources */,
+				89DE40BE1EF23F8100697D87 /* TravelEasyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		893DC4C71D54D54100DAF18A /* PBXTargetDependency */ = {
+		89DE40C11EF23F8100697D87 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 893DC4AD1D54D54100DAF18A /* TravelEasy */;
-			targetProxy = 893DC4C61D54D54100DAF18A /* PBXContainerItemProxy */;
-		};
-		893DC4D21D54D54100DAF18A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 893DC4AD1D54D54100DAF18A /* TravelEasy */;
-			targetProxy = 893DC4D11D54D54100DAF18A /* PBXContainerItemProxy */;
+			targetProxy = 89DE40C01EF23F8100697D87 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -954,7 +905,7 @@
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "TravelEasy/Kit/TravelEasy-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -986,57 +937,40 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "TravelEasy/Kit/TravelEasy-Bridging-Header.h";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
-		893DC4DD1D54D54100DAF18A /* Debug */ = {
+		89DE40C31EF23F8100697D87 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				INFOPLIST_FILE = TravelEasyTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhangxiaofei.TravelEasyTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inewhome.TravelEasyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 2.3;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TravelEasy.app/TravelEasy";
 			};
 			name = Debug;
 		};
-		893DC4DE1D54D54100DAF18A /* Release */ = {
+		89DE40C41EF23F8100697D87 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				INFOPLIST_FILE = TravelEasyTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhangxiaofei.TravelEasyTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inewhome.TravelEasyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TravelEasy.app/TravelEasy";
-			};
-			name = Release;
-		};
-		893DC4E01D54D54100DAF18A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				INFOPLIST_FILE = TravelEasyUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhangxiaofei.TravelEasyUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 2.3;
-				TEST_TARGET_NAME = TravelEasy;
-			};
-			name = Debug;
-		};
-		893DC4E11D54D54100DAF18A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				INFOPLIST_FILE = TravelEasyUITests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhangxiaofei.TravelEasyUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 2.3;
-				TEST_TARGET_NAME = TravelEasy;
 			};
 			name = Release;
 		};
@@ -1061,23 +995,13 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		893DC4DC1D54D54100DAF18A /* Build configuration list for PBXNativeTarget "TravelEasyTests" */ = {
+		89DE40C21EF23F8100697D87 /* Build configuration list for PBXNativeTarget "TravelEasyTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				893DC4DD1D54D54100DAF18A /* Debug */,
-				893DC4DE1D54D54100DAF18A /* Release */,
+				89DE40C31EF23F8100697D87 /* Debug */,
+				89DE40C41EF23F8100697D87 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		893DC4DF1D54D54100DAF18A /* Build configuration list for PBXNativeTarget "TravelEasyUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				893DC4E01D54D54100DAF18A /* Debug */,
-				893DC4E11D54D54100DAF18A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

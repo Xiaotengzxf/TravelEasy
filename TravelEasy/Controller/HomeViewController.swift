@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import JLToast
+import Toaster
 
 class HomeViewController: UIViewController , XZCalendarControllerDelegate , BunkTypeSelectViewDelegate , CityViewControllerDelegate {
     
@@ -32,37 +32,37 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         let imageView = UIImageView(image: UIImage(named: "logo_top"))
-        imageView.bounds = CGRectMake(0, 0, 104, 25)
+        imageView.bounds = CGRect(x: 0, y: 0, width: 104, height: 25)
         self.navigationItem.titleView = imageView
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), forState: .Normal, barMetrics: .Default)
-        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), forState: .Selected, barMetrics: .Default)
-        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), forState: .Highlighted, barMetrics: .Default)
-        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(FONTCOLOR) , NSFontAttributeName : UIFont.systemFontOfSize(15)], forState: .Normal)
-        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor("0071C4") , NSFontAttributeName : UIFont.systemFontOfSize(15)], forState: .Selected)
-        segmentedControl.setDividerImage(UIImage.imageWithColor("ffffff"), forLeftSegmentState: .Normal, rightSegmentState: .Normal, barMetrics: .Default)
+        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), for: UIControlState(), barMetrics: .default)
+        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), for: .selected, barMetrics: .default)
+        segmentedControl.setBackgroundImage(UIImage.imageWithColor("ffffff"), for: .highlighted, barMetrics: .default)
+        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(FONTCOLOR) , NSFontAttributeName : UIFont.systemFont(ofSize: 15)], for: UIControlState())
+        segmentedControl.setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor("0071C4") , NSFontAttributeName : UIFont.systemFont(ofSize: 15)], for: .selected)
+        segmentedControl.setDividerImage(UIImage.imageWithColor("ffffff"), forLeftSegmentState: UIControlState(), rightSegmentState: UIControlState(), barMetrics: .default)
         
         dateLabel.text = dateToString(86400, back: false)
         backDateLabel.text = dateToString(86400 * 2 , back: true)
         
-        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORHIGHLIGHT), forState: .Highlighted)
-        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORDISABLE), forState: .Disabled)
+        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORHIGHLIGHT), for: .highlighted)
+        okButton.setBackgroundImage(UIImage.imageWithColor(BUTTON3BGCOLORDISABLE), for: .disabled)
         
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             let defaultCity = info["DefaultCity"] as? String ?? ""
             if defaultCity.characters.count > 0 {
-                let array = defaultCity.componentsSeparatedByString(",")
+                let array = defaultCity.components(separatedBy: ",")
                 if array.count > 1 {
                     startCityLabel.text = array[1]
-                    startCity = ["Code" : array[0] , "IsCity" : true , "Name" : array[1]]
+                    startCity = ["Code" : array[0] as AnyObject , "IsCity" : true as AnyObject , "Name" : array[1] as AnyObject]
                     if array[1] == "北京" {
-                        arriveCity = ["Code" : "SHA" , "IsCity" : true , "Name" : "上海"]
+                        arriveCity = ["Code" : "SHA" as AnyObject , "IsCity" : true as AnyObject , "Name" : "上海" as AnyObject]
                         arriveCityLabel.text = "上海"
                     }else{
-                        arriveCity = ["Code" : "BJS" , "IsCity" : true , "Name" : "北京"]
+                        arriveCity = ["Code" : "BJS" as AnyObject , "IsCity" : true as AnyObject , "Name" : "北京" as AnyObject]
                         arriveCityLabel.text = "北京"
                     }
                 }
@@ -75,19 +75,19 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
         // Dispose of any resources that can be recreated.
     }
     
-    func dateToString(distance : Double , back : Bool) -> String {
-        let date = NSDate().dateByAddingTimeInterval(distance)
-        let formatter = NSDateFormatter()
+    func dateToString(_ distance : Double , back : Bool) -> String {
+        let date = Date().addingTimeInterval(distance)
+        let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        let dateString = formatter.stringFromDate(date)
-        let dateArray = dateString.componentsSeparatedByString("-").map({UInt($0)})
-        let dateModel = XZCalendarModel.calendarDayWithYear(dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
+        let dateString = formatter.string(from: date)
+        let dateArray = dateString.components(separatedBy: "-").map({UInt($0)})
+        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
         if back {
             backDateModel = dateModel
         }else{
             self.dateModel = dateModel
         }
-        return "\(dateModel.month < 10 ? "0\(dateModel.month )" : "\(dateModel.month)")月\(dateModel.day < 10 ? "0\(dateModel.day)" : "\(dateModel.day)")日\(dateModel.getWeek())"
+        return "\(dateModel!.month < 10 ? "0\(dateModel!.month )" : "\(dateModel!.month)")月\(dateModel!.day < 10 ? "0\(dateModel!.day)" : "\(dateModel!.day)")日\(dateModel!.getWeek()!)"
     }
     
     /**
@@ -95,7 +95,7 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      
      - parameter sender: segmentControl
      */
-    @IBAction func changeValue(sender: AnyObject) {
+    @IBAction func changeValue(_ sender: AnyObject) {
         if segmentedControl.selectedSegmentIndex == 0 {
             indicatorLeftLConstraint.constant = 0
             viewTopLConstraint.constant = 0
@@ -110,22 +110,22 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      
      - parameter sender: 按钮
      */
-    @IBAction func lookForFlight(sender: AnyObject) {
+    @IBAction func lookForFlight(_ sender: AnyObject) {
         if startCity.count == 0 {
-            JLToast.makeText("出发城市不能为空").show()
+            Toast(text: "出发城市不能为空").show()
             return
         }
         if arriveCity.count == 0 {
-            JLToast.makeText("到达城市不能为空").show()
+            Toast(text: "到达城市不能为空").show()
             return
         }
         if segmentedControl.selectedSegmentIndex == 1 {
-            if backDateModel.date().timeIntervalSinceDate(dateModel.date()) < 0 {
-                JLToast.makeText("出发时间不能晚于返程时间").show()
+            if backDateModel.date().timeIntervalSince(dateModel.date()) < 0 {
+                Toast(text: "出发时间不能晚于返程时间").show()
                 return
             }
         }
-        self.performSegueWithIdentifier("toFlightList", sender: self)
+        self.performSegue(withIdentifier: "toFlightList", sender: self)
     }
     
     /**
@@ -133,7 +133,7 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      
      - parameter sender: 按钮
      */
-    @IBAction func chooseDate(sender: AnyObject) {
+    @IBAction func chooseDate(_ sender: AnyObject) {
         let button = sender as! UIButton
         let calender = XZCalendarController()
         calender.start = "1"
@@ -148,18 +148,18 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      
      - parameter sender: 按钮
      */
-    @IBAction func chooseBunk(sender: AnyObject) {
+    @IBAction func chooseBunk(_ sender: AnyObject) {
         if bunkTypeSelectedView == nil {
-            bunkTypeSelectedView = BunkTypeSelectView(frame : CGRectZero)
+            bunkTypeSelectedView = BunkTypeSelectView(frame : CGRect.zero)
             bunkTypeSelectedView.translatesAutoresizingMaskIntoConstraints = false
             bunkTypeSelectedView.delegate = self
             self.view.window?.addSubview(bunkTypeSelectedView)
             
-            self.view.window?.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[bunkTypeSelectedView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["bunkTypeSelectedView" : bunkTypeSelectedView]))
-            self.view.window?.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[bunkTypeSelectedView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["bunkTypeSelectedView" : bunkTypeSelectedView]))
+            self.view.window?.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[bunkTypeSelectedView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["bunkTypeSelectedView" : bunkTypeSelectedView]))
+            self.view.window?.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[bunkTypeSelectedView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["bunkTypeSelectedView" : bunkTypeSelectedView]))
         }
         
-        bunkTypeSelectedView.performSelector(#selector(bunkTypeSelectedView.show), withObject: nil, afterDelay: 0.1)
+        bunkTypeSelectedView.perform(#selector(bunkTypeSelectedView.show), with: nil, afterDelay: 0.1)
     }
     
     /**
@@ -167,7 +167,7 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      
      - parameter sender: 按钮
      */
-    @IBAction func chooseCity(sender: AnyObject) {
+    @IBAction func chooseCity(_ sender: AnyObject) {
         if let button = sender as? UIButton {
             let tag = button.tag
             let cityController = CityViewController(nibName: "CityViewController", bundle: nil);
@@ -179,7 +179,7 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
     }
     
     //出发城市月到达城市互换
-    @IBAction func changeStartAndEndCity(sender: AnyObject) {
+    @IBAction func changeStartAndEndCity(_ sender: AnyObject) {
         let text = startCityLabel.text
         startCityLabel.text = arriveCityLabel.text
         arriveCityLabel.text = text
@@ -191,37 +191,37 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
     
     // MARK: - Navigation
 
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let controller = segue.destinationViewController as? FlightListViewController {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let controller = segue.destination as? FlightListViewController {
             
             let sCode = startCity["Code"] as? String ?? ""
             let isCity = startCity["IsCity"] as? Bool ?? false
             let aCode = arriveCity["Code"] as? String ?? ""
             let aIsCity = arriveCity["IsCity"] as? Bool ?? false
             let flightDate = "\(dateModel.year)-\(dateModel.month)-\(dateModel.day)"
-            var params : [String : AnyObject] = ["DepartureCode" : sCode , "DepartureCodeIsCity" : isCity , "ArrivalCode" : aCode , "ArrivalCodeIsCity" : aIsCity , "FlightDate" : flightDate]
+            var params : [String : AnyObject] = ["DepartureCode" : sCode as AnyObject , "DepartureCodeIsCity" : isCity as AnyObject , "ArrivalCode" : aCode as AnyObject , "ArrivalCodeIsCity" : aIsCity as AnyObject , "FlightDate" : flightDate as AnyObject]
             controller.title = "\(startCity["Name"] as? String ?? "") - \(arriveCity["Name"] as? String ?? "")"
             if bunkSelectRow > 0 {
                 if bunkSelectRow == 1 {
-                    params["BunkType"] = "Y"
+                    params["BunkType"] = "Y" as AnyObject
                 }else{
-                    params["BunkType"] = "F"
+                    params["BunkType"] = "F" as AnyObject
                 }
             }
             controller.params = params
             if segmentedControl.selectedSegmentIndex == 1 {
-                controller.backDate = backDateModel.date()
+                controller.backDate = (backDateModel.date() as! NSDate) as Date!
             }
-            controller.goDate = dateModel.date()
+            controller.goDate = (dateModel.date() as! NSDate) as Date!
         }
     }
  
-    func xzCalendarControllerWithModel(model: XZCalendarModel!) {
+    func xzCalendarController(with model: XZCalendarModel!) {
         if selectedDateFlag > 0 {
-            backDateLabel.text = "\(model.month < 10 ? "0\(model.month )" : "\(model.month)")月\(model.day < 10 ? "0\(model.day)" : "\(model.day)")日\(model.getWeek())"
+            backDateLabel.text = "\(model.month < 10 ? "0\(model.month )" : "\(model.month)")月\(model.day < 10 ? "0\(model.day)" : "\(model.day)")日\(model.getWeek()!)"
             backDateModel = model
         }else{
-            dateLabel.text = "\(model.month < 10 ? "0\(model.month )" : "\(model.month)")月\(model.day < 10 ? "0\(model.day)" : "\(model.day)")日\(model.getWeek())"
+            dateLabel.text = "\(model.month < 10 ? "0\(model.month )" : "\(model.month)")月\(model.day < 10 ? "0\(model.day)" : "\(model.day)")日\(model.getWeek()!)"
             dateModel = model
         }
     }
@@ -231,7 +231,7 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      
      - parameter row: 选定行
      */
-    func bunkTypeSelectedViewWithSelectedRow(row: NSInteger) {
+    func bunkTypeSelectedViewWithSelectedRow(_ row: NSInteger) {
         bunkLabel.text = bunks[row]
         bunkSelectRow = row
     }
@@ -242,7 +242,7 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
      - parameter bStart: 是否为出发
      - parameter city:   城市资料
      */
-    func selectCity(bStart : Bool , city: [String : AnyObject]) {
+    func selectCity(_ bStart : Bool , city: [String : AnyObject]) {
         if bStart {
             startCity = city
             startCityLabel.text = startCity["Name"] as? String

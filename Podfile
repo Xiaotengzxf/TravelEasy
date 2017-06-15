@@ -4,15 +4,15 @@ platform:ios,'8.0'
 use_frameworks!
 
 target 'TravelEasy' do
-pod 'TZStackView','1.2.0'
+pod 'TZStackView'
 pod 'Alamofire'
 pod 'MBProgressHUD'
-pod 'JLToast'
+pod 'Toaster'
 pod 'UIViewController+NavigationBar'
-pod 'SwiftyJSON','2.4.0'
+pod 'SwiftyJSON'
 pod 'PopupDialog'
-pod 'XCGLogger','3.6.0'
-pod 'IQKeyboardManagerSwift','4.0.4'
+pod 'XCGLogger'
+pod 'IQKeyboardManagerSwift'
 pod 'MJRefresh'
 #pod 'TabPageViewController'
 end

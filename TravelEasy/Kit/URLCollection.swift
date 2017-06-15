@@ -188,54 +188,44 @@ class URLCollection: NSObject {
         return "\(url)/api/Approval/GetApprovalAndAuthorizeCount"
     }
     
-    func postRequest(urlString : String , params : [String : AnyObject]? , headers : [String : String]? , callback : (JSON? , NSError?)->()) {
-        Alamofire.request(.POST, urlString, parameters: params, encoding: .JSON, headers: headers).validate().responseJSON { (response) in
+    func postRequest(_ urlString : String , params : [String : Any]? , headers : [String : String]? , callback : @escaping (JSON? , Error?)->()) {
+        Alamofire.request(urlString, method: .post, parameters: params, encoding: JSONEncoding.default, headers: headers).validate().responseJSON { (response) in
             switch response.result {
-            case .Success(let value):
+            case .success(let value):
                 print(value)
                 callback( JSON(value) , nil)
-            case .Failure(let error):
-                if error.code == -6003 {
-                    callback(JSON(["Code" : -1 , "Message" : "无效的请求地址"]) , nil)
-                }else{
-                    callback(nil , error)
-                }
-                
+            case .failure(let error):
+                callback(nil , error)
             }
         }
     }
     
-    func postRequest(urlString : String , params : [String : AnyObject]? , encoding : ParameterEncoding , headers : [String : String]? , callback : (JSON? , NSError?)->()) {
-        Alamofire.request(.POST, urlString, parameters: params, encoding: encoding, headers: headers).validate().responseJSON { (response) in
+    func postRequest(_ urlString : String , params : [String : Any]? , encoding : ParameterEncoding , headers : [String : String]? , callback : @escaping (JSON? , Error?)->()) {
+        Alamofire.request(urlString, method: .post, parameters: params, encoding: encoding, headers: headers).validate().responseJSON { (response) in
             switch response.result {
-            case .Success(let value):
+            case .success(let value):
                 print(value)
                 callback( JSON(value) , nil)
-            case .Failure(let error):
-                if error.code == -6003 {
-                    callback(JSON(["Code" : -1 , "Message" : "无效的请求地址"]) , nil)
-                }else{
-                    callback(nil , error)
-                }
-                
+            case .failure(let error):
+                callback(nil , error)
             }
         }
     }
     
-    func getRequest(urlString : String , params : [String : AnyObject]? , headers : [String : String]? , callback : (JSON? , NSError?)->()) {
-        Alamofire.request(.GET, urlString, parameters: params, encoding: .URLEncodedInURL, headers: headers).validate().responseJSON { (response) in
+    func getRequest(_ urlString : String , params : [String : Any]? , headers : [String : String]? , callback : @escaping (JSON? , Error?)->()) {
+        Alamofire.request(urlString, method:.get, parameters: params, encoding: URLEncoding.default, headers: headers).validate().responseJSON { (response) in
             switch response.result {
-            case .Success(let value):
+            case .success(let value):
                 print(value)
                 callback(JSON(value) , nil)
-            case .Failure(let error):
+            case .failure(let error):
                 callback(nil , error)
             }
         }
     }
     
     func validateToken() -> String? {
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             if let token = info["Token"] as? String {
                 return token
             }
@@ -244,7 +234,7 @@ class URLCollection: NSObject {
     }
     
     func validateTokenWithBackId() -> (String , Int)? {
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject] {
             if let token = info["Token"] as? String {
                 return (token , info["EmployeeId"] as! Int)
             }

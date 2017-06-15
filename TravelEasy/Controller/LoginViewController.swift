@@ -8,7 +8,7 @@
 
 import UIKit
 import UIViewController_NavigationBar
-import JLToast
+import Toaster
 
 class LoginViewController: UIViewController {
 
@@ -21,12 +21,12 @@ class LoginViewController: UIViewController {
         
         self.navigationBar.barTintColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         self.navigationBar.shadowImage = UIImage()
-        self.navigationBar.setBackgroundImage(UIImage(), forBarPosition: .Top, barMetrics: .Default)
+        self.navigationBar.setBackgroundImage(UIImage(), for: .top, barMetrics: .default)
         //nameTextField.rightView = rightButton(1)
         //pwdTextField.rightView = rightButton(2)
         //nameTextField.rightViewMode = .WhileEditing
         //pwdTextField.rightViewMode = .WhileEditing
-        nameTextField.text = NSUserDefaults.standardUserDefaults().objectForKey("loginName") as? String
+        nameTextField.text = UserDefaults.standard.object(forKey: "loginName") as? String
     }
 
     override func didReceiveMemoryWarning() {
@@ -45,13 +45,13 @@ class LoginViewController: UIViewController {
      
      - returns: 右按钮
      */
-    func rightButton(tag : Int) -> UIButton {
-        let button = UIButton(type: .Custom)
+    func rightButton(_ tag : Int) -> UIButton {
+        let button = UIButton(type: .custom)
         button.tag = tag
-        button.bounds = CGRectMake(0, 0, 15, 15)
-        button.setBackgroundImage(UIImage(named: "login_img_del_un"), forState: .Normal)
-        button.setBackgroundImage(UIImage(named: "login_img_del_pr"), forState: .Highlighted)
-        button.addTarget(self, action: #selector(LoginViewController.clearText(_:)), forControlEvents: .TouchUpInside)
+        button.bounds = CGRect(x: 0, y: 0, width: 15, height: 15)
+        button.setBackgroundImage(UIImage(named: "login_img_del_un"), for: UIControlState())
+        button.setBackgroundImage(UIImage(named: "login_img_del_pr"), for: .highlighted)
+        button.addTarget(self, action: #selector(LoginViewController.clearText(_:)), for: .touchUpInside)
         return button
     }
     
@@ -60,7 +60,7 @@ class LoginViewController: UIViewController {
      
      - parameter sender: 按钮
      */
-    func clearText(sender : AnyObject!) {
+    func clearText(_ sender : AnyObject!) {
         if let button = sender as? UIButton {
             let tag = button.tag
             if tag == 1 {
@@ -76,45 +76,45 @@ class LoginViewController: UIViewController {
      
      - parameter sender: 按钮
      */
-    @IBAction func login(sender: AnyObject) {
+    @IBAction func login(_ sender: AnyObject) {
         nameTextField.resignFirstResponder()
         pwdTextField.resignFirstResponder()
         let name = nameTextField.text
         let pwd = pwdTextField.text
         if name?.characters.count == 0 {
-            JLToast.makeText("请输入帐号").show()
+            Toast(text: "请输入帐号").show()
         }else if pwd?.characters.count == 0 {
-            JLToast.makeText("请输入密码").show()
+            Toast(text: "请输入密码").show()
         }else{
             let hud = showHUD()
-            let appVersion = NSBundle.mainBundle().objectForInfoDictionaryKey("CFBundleShortVersionString") as! String
-            let deviceId = UIDevice.currentDevice().identifierForVendor!.UUIDString
-            let sysVersion = UIDevice.currentDevice().systemVersion
+            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+            let deviceId = UIDevice.current.identifierForVendor!.uuidString
+            let sysVersion = UIDevice.current.systemVersion
             let manager = URLCollection()
             manager.postRequest(manager.login, params: ["LoginName" : name ?? "" , "Password" : pwd ?? "" , "AppVersion" : appVersion , "DeviceType" : modelName , "DeviceId" : deviceId , "OSVersion" : sysVersion], headers: nil, callback: {[weak self] (json, error) in
-                hud.hideAnimated(true)
+                hud.hide(animated: true)
                 if let jsonObject = json {
                     if jsonObject["Code"].int == 0 {
-                        let controller = self?.storyboard?.instantiateViewControllerWithIdentifier("TabBarController")
+                        let controller = self?.storyboard?.instantiateViewController(withIdentifier: "TabBarController")
                         self?.view.window?.rootViewController = controller
-                        NSUserDefaults.standardUserDefaults().setObject(jsonObject.object, forKey: "info")
-                        NSUserDefaults.standardUserDefaults().setObject(self!.nameTextField.text, forKey: "loginName")
-                        NSUserDefaults.standardUserDefaults().synchronize()
+                        UserDefaults.standard.set(jsonObject.object, forKey: "info")
+                        UserDefaults.standard.set(self!.nameTextField.text, forKey: "loginName")
+                        UserDefaults.standard.synchronize()
                         JPUSHService.setAlias("\(jsonObject["EmployeeId"].intValue)", callbackSelector: nil, object: nil)
                         self?.loadApprovalAndAuthorizeCount()
                     }else{
                         if let message = jsonObject["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络故障，请检查网络").show()
+                    Toast(text: "网络故障，请检查网络").show()
                 }
             })
         }
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         nameTextField.resignFirstResponder()
         pwdTextField.resignFirstResponder()
     }
@@ -134,7 +134,7 @@ class LoginViewController: UIViewController {
         uname(&systemInfo)
         let machineMirror = Mirror(reflecting: systemInfo.machine)
         let identifier = machineMirror.children.reduce("") { identifier, element in
-            guard let value = element.value as? Int8 where value != 0 else { return identifier }
+            guard let value = element.value as? Int8, value != 0 else { return identifier }
             return identifier + String(UnicodeScalar(UInt8(value)))
         }
         
@@ -167,7 +167,7 @@ class LoginViewController: UIViewController {
     }
     
     func loadApprovalAndAuthorizeCount() {
-        if let info = NSUserDefaults.standardUserDefaults().objectForKey("info") as? [String : AnyObject] where info.count > 0 {
+        if let info = UserDefaults.standard.object(forKey: "info") as? [String : AnyObject], info.count > 0 {
             let manager = URLCollection()
             if let token = manager.validateToken() {
                 manager.getRequest(manager.getApprovalAndAuthorizeCount, params: nil, headers: ["token" : token], callback: {(json, error) in
@@ -175,11 +175,11 @@ class LoginViewController: UIViewController {
                         if jsonObject["Code"].int == 0 {
                             let approvalCount = jsonObject["ApprovalCount"].intValue
                             let authorizeCount = jsonObject["AuthorizeCount"].intValue
-                            NSUserDefaults.standardUserDefaults().setInteger(approvalCount, forKey: "approvalCount")
-                            NSUserDefaults.standardUserDefaults().setInteger(authorizeCount, forKey: "authorizeCount")
-                            NSUserDefaults.standardUserDefaults().synchronize()
+                            UserDefaults.standard.set(approvalCount, forKey: "approvalCount")
+                            UserDefaults.standard.set(authorizeCount, forKey: "authorizeCount")
+                            UserDefaults.standard.synchronize()
                             if approvalCount > 0 || authorizeCount > 0 {
-                                NSNotificationCenter.defaultCenter().postNotificationName("MTabBarViewController", object: 12)
+                                NotificationCenter.default.post(name: Notification.Name(rawValue: "MTabBarViewController"), object: 12)
                             }
                             
                         }

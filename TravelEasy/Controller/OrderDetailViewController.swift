@@ -8,8 +8,9 @@
 
 import UIKit
 import SwiftyJSON
-import JLToast
+import Toaster
 import PopupDialog
+import Alamofire
 
 class OrderDetailViewController: UIViewController {
 
@@ -76,19 +77,19 @@ class OrderDetailViewController: UIViewController {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.getRequest(manager.getOrderDetail, params: ["orderId" : orderDetail["OrderId"].intValue], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.getRequest(manager.getOrderDetail, params: ["orderId" : orderDetail["OrderId"].intValue as AnyObject], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.orderModel = model["Order"]
                         self?.refreshView()
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
@@ -129,22 +130,22 @@ class OrderDetailViewController: UIViewController {
         let discount = orderModel[ "Route" , "Discount"].intValue
         discountLabel.text = "\(discount < 100 ? "\(Float(discount) / 10)折" : "全价")\(orderModel[ "Route" ,"BunkName"].stringValue)"
         priceLabel.attributedText = "¥\(orderModel[ "FeeInfo" , "PaymentAmount"].intValue)".attributeMoneyText()
-        let departureDateTime = orderModel[ "Route" , "Departure" , "DateTime"].stringValue.componentsSeparatedByString(" ")
+        let departureDateTime = orderModel[ "Route" , "Departure" , "DateTime"].stringValue.components(separatedBy: " ")
         if departureDateTime.count == 2 {
             goTimeLabel.text = departureDateTime[1]
-            let time = departureDateTime[0].componentsSeparatedByString("-").map{UInt($0)}
+            let time = departureDateTime[0].components(separatedBy: "-").map{UInt($0)}
             if time.count == 3 {
-                let calender = XZCalendarModel.calendarDayWithYear(time[0]!, month: time[1]!, day: time[2]!)
-                goDateLabel.text = "\(calender.month > 10 ? "\(calender.month)" : "0\(calender.month)")月\(calender.day > 10 ? "\(calender.day)" : "0\(calender.day)")日\(calender.getWeek())"
+                let calender = XZCalendarModel.calendarDay(withYear: time[0]!, month: time[1]!, day: time[2]!)
+                goDateLabel.text = "\((calender?.month)! > 10 ? "\(calender?.month)" : "0\(calender?.month)")月\((calender?.day)! > 10 ? "\(calender?.day)" : "0\(calender?.day)")日\(calender?.getWeek()!)"
             }
         }
-        let ArrivalDateTime = orderModel[ "Route" , "Arrival" , "DateTime"].stringValue.componentsSeparatedByString(" ")
+        let ArrivalDateTime = orderModel[ "Route" , "Arrival" , "DateTime"].stringValue.components(separatedBy: " ")
         if ArrivalDateTime.count == 2 {
             backTimeLabel.text = ArrivalDateTime[1]
-            let time = ArrivalDateTime[0].componentsSeparatedByString("-").map{UInt($0)}
+            let time = ArrivalDateTime[0].components(separatedBy: "-").map{UInt($0)}
             if time.count == 3 {
-                let calender = XZCalendarModel.calendarDayWithYear(time[0]!, month: time[1]!, day: time[2]!)
-                backDateLabel.text = "\(calender.month > 10 ? "\(calender.month)" : "0\(calender.month)")月\(calender.day > 10 ? "\(calender.day)" : "0\(calender.day)")日\(calender.getWeek())"
+                let calender = XZCalendarModel.calendarDay(withYear: time[0]!, month: time[1]!, day: time[2]!)
+                backDateLabel.text = "\((calender?.month)! > 10 ? "\(calender?.month)" : "0\(calender?.month)")月\((calender?.day)! > 10 ? "\(calender?.day)" : "0\(calender?.day)")日\(calender?.getWeek()!)"
             }
         }
         goAirportLabel.text = "\(orderModel[ "Route" , "Departure" , "AirportName"].stringValue)机场\(orderModel[ "Route" , "Departure" , "Terminal"].stringValue)"
@@ -236,26 +237,26 @@ class OrderDetailViewController: UIViewController {
         attributeFee.addAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(TEXTCOLOR)], range: NSMakeRange(0, 1 + String(insuranceFee).characters.count))
         insuranceFeeLabel.attributedText = attributeFee
         
-        cancelButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        cancelButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        cancelButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        cancelButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        payButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        payButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        payButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        payButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        refundButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        refundButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        refundButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        refundButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        changeButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        changeButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        changeButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        changeButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        netCheckInButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        netCheckInButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        netCheckInButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        netCheckInButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
+        cancelButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        cancelButton.setTitleColor(UIColor.white, for: .highlighted)
+        cancelButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        cancelButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        payButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        payButton.setTitleColor(UIColor.white, for: .highlighted)
+        payButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        payButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        refundButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        refundButton.setTitleColor(UIColor.white, for: .highlighted)
+        refundButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        refundButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        changeButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        changeButton.setTitleColor(UIColor.white, for: .highlighted)
+        changeButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        changeButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        netCheckInButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        netCheckInButton.setTitleColor(UIColor.white, for: .highlighted)
+        netCheckInButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        netCheckInButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
         
         let canCancel = orderModel["CanCancel"].boolValue
         let canPayment = orderModel["CanPayment"].boolValue
@@ -263,59 +264,59 @@ class OrderDetailViewController: UIViewController {
         let canChange = orderModel["CanChange"].boolValue
         let canNetCheckIn = orderModel["CanNetCheckIn"].boolValue
         if canCancel {
-            cancelButton.hidden = false
+            cancelButton.isHidden = false
             cancelButtonWidthConstraint.constant = 50
             payToCancelLConstraint.constant = 10
         }else{
-            cancelButton.hidden = true
+            cancelButton.isHidden = true
             cancelButtonWidthConstraint.constant = 0
             payToCancelLConstraint.constant = 0
         }
         if canPayment {
-            payButton.hidden = false
+            payButton.isHidden = false
             payButtonWidthConstraint.constant = 50
             refundToPayLConstraint.constant = 10
         }else{
-            payButton.hidden = true
+            payButton.isHidden = true
             payButtonWidthConstraint.constant = 0
             refundToPayLConstraint.constant = 0
         }
         if canReturn {
-            refundButton.hidden = false
+            refundButton.isHidden = false
             refundButtonWidthConstraint.constant = 50
             changeToRefundLConstraint.constant = 10
         }else{
-            refundButton.hidden = true
+            refundButton.isHidden = true
             refundButtonWidthConstraint.constant = 0
             changeToRefundLConstraint.constant = 0
         }
         if canChange {
-            changeButton.hidden = false
+            changeButton.isHidden = false
             changeButtonWidthConstraint.constant = 50
             netCheckInToChangeLConsraint.constant = 10
         }else{
-            changeButton.hidden = true
+            changeButton.isHidden = true
             changeButtonWidthConstraint.constant = 0
             netCheckInToChangeLConsraint.constant = 0
         }
         if canNetCheckIn {
-            netCheckInButton.hidden = false
+            netCheckInButton.isHidden = false
             netCheckInButtonWidthConstraint.constant = 70
         }else{
-            netCheckInButton.hidden = true
+            netCheckInButton.isHidden = true
             netCheckInButtonWidthConstraint.constant = 0
         }
         if !canCancel && !canPayment && !canReturn && !canChange && !canNetCheckIn {
-            buttonsView.hidden = true
+            buttonsView.isHidden = true
             buttonsViewHeightLConstraint.constant = 0
         }else{
-            buttonsView.hidden = false
+            buttonsView.isHidden = false
             buttonsViewHeightLConstraint.constant = 44
         }
 
     }
 
-    @IBAction func handleOrderEvent(sender: AnyObject) {
+    @IBAction func handleOrderEvent(_ sender: AnyObject) {
         let button = sender as! UIButton
         switch button.tag {
         case 1:
@@ -323,20 +324,20 @@ class OrderDetailViewController: UIViewController {
         case 2:
             payOrder()
         case 3:
-            if let controller = storyboard?.instantiateViewControllerWithIdentifier("OrderEvent") as? OrderEventTableViewController {
+            if let controller = storyboard?.instantiateViewController(withIdentifier: "OrderEvent") as? OrderEventTableViewController {
                 controller.orderId = orderDetail["OrderId"].intValue
                 controller.title = "退票"
                 self.navigationController?.pushViewController(controller, animated: true)
             }
         case 4:
-            let controller = self.storyboard?.instantiateViewControllerWithIdentifier("OrderEvent") as! OrderEventTableViewController
+            let controller = self.storyboard?.instantiateViewController(withIdentifier: "OrderEvent") as! OrderEventTableViewController
             controller.flag = 1
             controller.orderDetail = orderDetail
             controller.title = "改签原因"
             self.navigationController?.pushViewController(controller, animated: true)
             
         case 5:
-            if let controller = storyboard?.instantiateViewControllerWithIdentifier("NetCheckIn") as? NetCheckInViewController {
+            if let controller = storyboard?.instantiateViewController(withIdentifier: "NetCheckIn") as? NetCheckInViewController {
                 controller.orderId = orderDetail["OrderId"].intValue
                 self.navigationController?.pushViewController(controller, animated: true)
             }
@@ -350,15 +351,15 @@ class OrderDetailViewController: UIViewController {
      
      */
     func cancelFlight() {
-        let alertController = UIAlertController(title: "提示", message: "您确定要取消该订单", preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "取消", style: .Cancel, handler: { (action) in
+        let alertController = UIAlertController(title: "提示", message: "您确定要取消该订单", preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
             
         }))
-        alertController.addAction(UIAlertAction(title: "确定", style: .Default, handler: {[weak self] (action) in
+        alertController.addAction(UIAlertAction(title: "确定", style: .default, handler: {[weak self] (action) in
             let orderId = self!.orderModel["OrderId"].intValue
             self?.requestCancelFlight(orderId)
             }))
-        self.presentViewController(alertController, animated: true) {
+        self.present(alertController, animated: true) {
             
         }
     }
@@ -368,24 +369,24 @@ class OrderDetailViewController: UIViewController {
      
      - parameter orderId: 订单号
      */
-    func requestCancelFlight(orderId : Int)  {
+    func requestCancelFlight(_ orderId : Int)  {
         let manager = URLCollection()
         if let token = manager.validateToken() {
             let hud = showHUD()
-            manager.postRequest(manager.cancelApply, params: ["orderId" : orderId] , encoding : .URLEncodedInURL, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(manager.cancelApply, params: ["orderId" : orderId as AnyObject] , encoding : URLEncoding.default, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let json = jsonObject {
-                    if let code = json["Code"].int  where code == 0 {
-                        JLToast.makeText("取消成功").show()
-                        self?.navigationController?.popViewControllerAnimated(true)
-                        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
+                    if let code = json["Code"].int, code == 0 {
+                        Toast(text: "取消成功").show()
+                        self?.navigationController?.popViewController(animated: true)
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: 3)
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
                 })
         }
@@ -395,7 +396,7 @@ class OrderDetailViewController: UIViewController {
      支付订单
      */
     func payOrder() {
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("ConfirmOrder") as! ConfirmOrderViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "ConfirmOrder") as! ConfirmOrderViewController
         controller.passengerName = orderDetail["PassengerName"].stringValue
         controller.travelLine = orderDetail["DepartureCityName"].stringValue + "-" + orderDetail["ArrivalCityName"].stringValue
         controller.date = orderDetail["DepartureDateTime"].stringValue + " 出发"
@@ -411,18 +412,18 @@ class OrderDetailViewController: UIViewController {
         })
         cancelButton.buttonColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         cancelButton.titleColor = UIColor.hexStringToColor(FONTCOLOR)
-        cancelButton.titleFont = UIFont.systemFontOfSize(15)
+        cancelButton.titleFont = UIFont.systemFont(ofSize: 15)
         
         let okButton = PopupDialogButton(title: "确认支付", dismissOnTap: true, action: { [weak self] in
             self?.askOrderConfirmByCorpCredit(self!.orderDetail["OrderId"].intValue)
             
             })
         okButton.buttonColor = UIColor.hexStringToColor(TEXTCOLOR)
-        okButton.titleColor = UIColor.whiteColor()
-        okButton.titleFont = UIFont.systemFontOfSize(15)
+        okButton.titleColor = UIColor.white
+        okButton.titleFont = UIFont.systemFont(ofSize: 15)
         dialog.addButtons([cancelButton , okButton])
-        dialog.buttonAlignment = .Horizontal
-        self.presentViewController(dialog, animated: true, completion: {
+        dialog.buttonAlignment = .horizontal
+        self.present(dialog, animated: true, completion: {
             
         })
     }
@@ -432,24 +433,24 @@ class OrderDetailViewController: UIViewController {
      
      - parameter askOrderId: 确认单号
      */
-    func askOrderConfirmByCorpCredit(askOrderId : Int) {
+    func askOrderConfirmByCorpCredit(_ askOrderId : Int) {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId], encoding : .URLEncodedInURL ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId], encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
-                        JLToast.makeText("支付成功").show()
-                        self?.navigationController?.popViewControllerAnimated(true)
-                        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
+                        Toast(text: "支付成功").show()
+                        self?.navigationController?.popViewController(animated: true)
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: 3)
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
@@ -459,7 +460,7 @@ class OrderDetailViewController: UIViewController {
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
     }
     

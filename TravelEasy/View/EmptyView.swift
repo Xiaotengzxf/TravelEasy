@@ -20,7 +20,7 @@ class EmptyView: UIView {
         case noFlightData = 2
     }
     
-    func setPropertyValue(emptyType : EmptyType)  {
+    func setPropertyValue(_ emptyType : EmptyType)  {
         switch emptyType {
         case .noData:
             iconImageView.image = UIImage(named: "icon_noinfo")

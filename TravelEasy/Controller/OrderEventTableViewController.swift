@@ -8,7 +8,8 @@
 
 import UIKit
 import SwiftyJSON
-import JLToast
+import Toaster
+import Alamofire
 
 class OrderEventTableViewController: UITableViewController {
     
@@ -23,7 +24,7 @@ class OrderEventTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
-        tableView.registerNib(UINib(nibName: "HeaderView", bundle: NSBundle.mainBundle()), forHeaderFooterViewReuseIdentifier: "Header")
+        tableView.register(UINib(nibName: "HeaderView", bundle: Bundle.main), forHeaderFooterViewReuseIdentifier: "Header")
         if flag == 1 {
             arrReason = ["行程变动" , "航班延误" , "自愿升舱" , "其他"]
             self.setDesc("改签时需支付机票差价及政策规定的改签手续费。若费用变更，我们将及时联系您。 如有其他问题，请联系客服人员。")
@@ -38,15 +39,15 @@ class OrderEventTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func submitTravelStandard(sender: AnyObject) {
+    @IBAction func submitTravelStandard(_ sender: AnyObject) {
         if flag == 1 {
             if selectedRow >= 0 {
-                let controller = self.storyboard?.instantiateViewControllerWithIdentifier("ChangeTicket") as! changeTicketViewController
+                let controller = self.storyboard?.instantiateViewController(withIdentifier: "ChangeTicket") as! changeTicketViewController
                 controller.orderDetail = orderDetail
                 controller.reason = arrReason[selectedRow]
                 self.navigationController?.pushViewController(controller, animated: true)
             }else{
-                JLToast.makeText("请选择改签的原因").show();
+                Toast(text: "请选择改签的原因").show();
             }
         }else{
             submitReason()
@@ -57,59 +58,59 @@ class OrderEventTableViewController: UITableViewController {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.getRequest(manager.getOrderDetail, params: ["orderId" : orderId], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.getRequest(manager.getOrderDetail, params: ["orderId" : orderId as AnyObject], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.setDesc(model["Order" , "Route" , "ReturnPolicy" , "ReturnPolicyDesc"].string ?? "无")
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
             })
         }
     }
     
-    func setDesc(desc : String) {
+    func setDesc(_ desc : String) {
         self.policyDesc = desc
         let attributeString = NSMutableAttributedString(string: self.policyDesc)
         let style = NSMutableParagraphStyle()
         style.lineSpacing = 5
         attributeString.addAttributes([NSParagraphStyleAttributeName : style], range: NSMakeRange(0, attributeString.length))
         self.waringLabel.attributedText = attributeString
-        let size = attributeString.boundingRectWithSize(CGSizeMake(SCREENWIDTH - 30, 1000), options: [.UsesLineFragmentOrigin , .UsesFontLeading], context: nil).size
-        self.tableView.tableHeaderView?.bounds = CGRectMake(0, 0, SCREENWIDTH, size.height + 20)
+        let size = attributeString.boundingRect(with: CGSize(width: SCREENWIDTH - 30, height: 1000), options: [.usesLineFragmentOrigin , .usesFontLeading], context: nil).size
+        self.tableView.tableHeaderView?.bounds = CGRect(x: 0, y: 0, width: SCREENWIDTH, height: size.height + 20)
         self.tableView.reloadData()
     }
     
     func submitReason() {
         let manager = URLCollection()
         let hud = showHUD()
-        var params : [String : AnyObject] = [:]
+        var params : [String : Any] = [:]
         params["orderId"] = orderId
         if selectedRow >= 0 {
             params["returnReason"] = arrReason[selectedRow]
         }else{
-            JLToast.makeText("请选择退票的原因").show();
+            Toast(text: "请选择退票的原因").show();
         }
         if let token = manager.validateToken() {
-            manager.postRequest(manager.returnApply, params: params , encoding : .URLEncodedInURL , headers: ["Token" : token], callback: {[weak self] (json, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(manager.returnApply, params: params , encoding : URLEncoding.default , headers: ["Token" : token], callback: {[weak self] (json, error) in
+                hud.hide(animated: true)
                 if let jsonObject = json {
                     if jsonObject["Code"].int == 0 {
-                        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
-                        self?.navigationController?.popViewControllerAnimated(true)
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: 3)
+                        self?.navigationController?.popViewController(animated: true)
                     }else{
                         if let message = jsonObject["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络故障，请检查网络").show()
+                    Toast(text: "网络故障，请检查网络").show()
                 }
                 })
         }
@@ -118,16 +119,16 @@ class OrderEventTableViewController: UITableViewController {
 
     // MARK: - Table view data source
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return arrReason.count
     }
     
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        cell.textLabel?.font = UIFont.systemFontOfSize(12)
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 12)
         
         cell.textLabel?.text = arrReason[indexPath.row]
         
@@ -141,8 +142,8 @@ class OrderEventTableViewController: UITableViewController {
         return cell
     }
     
-    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let header = tableView.dequeueReusableHeaderFooterViewWithIdentifier("Header") as! HeaderView
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "Header") as! HeaderView
         header.backgroundColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         header.contentView.backgroundColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         header.titleLabel.text = flag == 1 ? "请选择改签的原因：" :"请选择退票原因："
@@ -150,15 +151,15 @@ class OrderEventTableViewController: UITableViewController {
         return header
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 30
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 44
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         selectedRow = indexPath.row
         tableView.reloadData()
     }

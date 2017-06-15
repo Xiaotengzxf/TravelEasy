@@ -9,8 +9,34 @@
 import UIKit
 import MBProgressHUD
 import SwiftyJSON
-import JLToast
+import Toaster
 import PopupDialog
+import Alamofire
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 class ApprovalDetailViewController: UIViewController {
     
@@ -36,14 +62,14 @@ class ApprovalDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        agreeButton.setBackgroundImage(UIImage.imageWithColor(BUTTONBGCOLORHIGHLIGHT), forState: .Highlighted)
-        refuseButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        refuseButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        refuseButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        refuseButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
+        agreeButton.setBackgroundImage(UIImage.imageWithColor(BUTTONBGCOLORHIGHLIGHT), for: .highlighted)
+        refuseButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        refuseButton.setTitleColor(UIColor.white, for: .highlighted)
+        refuseButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        refuseButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
         if isOwn {
-            refuseButton.hidden = true
-            agreeButton.setTitle("撤销", forState: .Normal)
+            refuseButton.isHidden = true
+            agreeButton.setTitle("撤销", for: UIControlState())
         }
         getApprovalDetail()
     }
@@ -58,18 +84,18 @@ class ApprovalDetailViewController: UIViewController {
         let hud = showHUD()
         if let token = manager.validateToken() {
             manager.getRequest(manager.getApprovalDetail, params: ["approvalId" : approvalId], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.approvalDetail = model["ApprovalDetail"]
                         self?.refreshView()
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
                 })
         }
@@ -97,12 +123,12 @@ class ApprovalDetailViewController: UIViewController {
         transportLabel.text = approvalDetail["Transport"].string
         var orders : [JSON] = []
         if let flightOrders = approvalDetail["FlightOrders"].array {
-            for (index , item) in flightOrders.enumerate() {
-                let approvalFlightOrderView = NSBundle.mainBundle().loadNibNamed("ApprovalFlightOrderView", owner: nil, options: nil)!.last as! ApprovalFlightOrderView
+            for (index , item) in flightOrders.enumerated() {
+                let approvalFlightOrderView = Bundle.main.loadNibNamed("ApprovalFlightOrderView", owner: nil, options: nil)!.last as! ApprovalFlightOrderView
                 approvalFlightOrderView.translatesAutoresizingMaskIntoConstraints = false
                 airportAndHotelView.addSubview(approvalFlightOrderView)
-                airportAndHotelView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[approvalFlightOrderView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["approvalFlightOrderView" : approvalFlightOrderView]))
-                airportAndHotelView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-(spacing)-[approvalFlightOrderView(86)]", options: .DirectionLeadingToTrailing, metrics: ["spacing" : 86 * index], views: ["approvalFlightOrderView" : approvalFlightOrderView]))
+                airportAndHotelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[approvalFlightOrderView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["approvalFlightOrderView" : approvalFlightOrderView]))
+                airportAndHotelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(spacing)-[approvalFlightOrderView(86)]", options: NSLayoutFormatOptions(), metrics: ["spacing" : 86 * index], views: ["approvalFlightOrderView" : approvalFlightOrderView]))
                 
                 approvalFlightOrderView.cityLabel.text = item["DepartureCityName"].stringValue + "-" + item["ArrivalCityName"].stringValue
                 approvalFlightOrderView.discountLabel.text = "\(Float(item["Discount"].intValue) / 10)折\(item["BunkName"].stringValue)"
@@ -115,12 +141,12 @@ class ApprovalDetailViewController: UIViewController {
         }
         var hotelOrders : [JSON] = []
         if let array = approvalDetail["HotelOrders"].array {
-            for (index , item) in array.enumerate() {
-                let approvalHotelOrderView = NSBundle.mainBundle().loadNibNamed("ApprovalHotelOrderView", owner: nil, options: nil)!.last as! ApprovalHotelOrderView
+            for (index , item) in array.enumerated() {
+                let approvalHotelOrderView = Bundle.main.loadNibNamed("ApprovalHotelOrderView", owner: nil, options: nil)!.last as! ApprovalHotelOrderView
                 approvalHotelOrderView.translatesAutoresizingMaskIntoConstraints = false
                 airportAndHotelView.addSubview(approvalHotelOrderView)
-                airportAndHotelView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[approvalHotelOrderView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["approvalHotelOrderView" : approvalHotelOrderView]))
-                airportAndHotelView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-(spacing)-[approvalHotelOrderView(60)]", options: .DirectionLeadingToTrailing, metrics: ["spacing" : 60 * index + orders.count * 86], views: ["approvalHotelOrderView" : approvalHotelOrderView]))
+                airportAndHotelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[approvalHotelOrderView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["approvalHotelOrderView" : approvalHotelOrderView]))
+                airportAndHotelView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(spacing)-[approvalHotelOrderView(60)]", options: NSLayoutFormatOptions(), metrics: ["spacing" : 60 * index + orders.count * 86], views: ["approvalHotelOrderView" : approvalHotelOrderView]))
                 
                 approvalHotelOrderView.cityLabel.text = item["HotelName"].stringValue
                 approvalHotelOrderView.BedTypeLabel.text = item["BedType"].stringValue
@@ -131,16 +157,16 @@ class ApprovalDetailViewController: UIViewController {
         }
         airportAndHotelViewHieghtLContraint.constant = CGFloat(orders.count) * 86 + CGFloat(hotelOrders.count) * 60
         if let array = approvalDetail["ApprovalHis"].array {
-            for (index , item) in array.enumerate() {
-                let approvalHisView = NSBundle.mainBundle().loadNibNamed("ApprovalHisView", owner: nil, options: nil)!.last as! ApprovalHisView
+            for (index , item) in array.enumerated() {
+                let approvalHisView = Bundle.main.loadNibNamed("ApprovalHisView", owner: nil, options: nil)!.last as! ApprovalHisView
                 approvalHisView.translatesAutoresizingMaskIntoConstraints = false
                 hisView.addSubview(approvalHisView)
-                hisView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[approvalHisView]|", options: .DirectionLeadingToTrailing, metrics: nil, views: ["approvalHisView" : approvalHisView]))
-                hisView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-(spacing)-[approvalHisView(65)]", options: .DirectionLeadingToTrailing, metrics: ["spacing" : 65 * index], views: ["approvalHisView" : approvalHisView]))
+                hisView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[approvalHisView]|", options: NSLayoutFormatOptions(), metrics: nil, views: ["approvalHisView" : approvalHisView]))
+                hisView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-(spacing)-[approvalHisView(65)]", options: NSLayoutFormatOptions(), metrics: ["spacing" : 65 * index], views: ["approvalHisView" : approvalHisView]))
                 
                 approvalHisView.nameLabel.text = item["AuditEmployeeName"].stringValue.characters.count > 0 ? item["AuditEmployeeName"].stringValue : item["AuditPositionEmployeeNames"].stringValue
                 approvalHisView.departmentLabel.text = item["AuditPositionName"].stringValue
-                if let auditOpinion = item["AuditOpinion"].string where auditOpinion.characters.count > 0 {
+                if let auditOpinion = item["AuditOpinion"].string, auditOpinion.characters.count > 0 {
                     approvalHisView.statucLabel.text = item["Status"].stringValue + "(\(auditOpinion))"
                 }else{
                     approvalHisView.statucLabel.text = item["Status"].stringValue
@@ -148,7 +174,7 @@ class ApprovalDetailViewController: UIViewController {
                 
                 approvalHisView.timeLabel.text = item["AuditDate"].stringValue
                 if index == 0 {
-                    approvalHisView.lineImageView.hidden = true
+                    approvalHisView.lineImageView.isHidden = true
                 }
                 // 待审批，审批通过，审批拒绝，已撤消
                 if let status = item["Status"].string {
@@ -165,15 +191,15 @@ class ApprovalDetailViewController: UIViewController {
             }
             hisViewHeightLConstraint.constant = 65 * CGFloat(array.count)
         }
-        if let status = approvalDetail["Status"].string where status == "待审批" {
-            toolView.hidden = false
+        if let status = approvalDetail["Status"].string, status == "待审批" {
+            toolView.isHidden = false
         }else{
-            toolView.hidden = true
+            toolView.isHidden = true
         }
     }
     
-    func changeDateType(date : String) -> String {
-        let array = date.componentsSeparatedByString("-")
+    func changeDateType(_ date : String) -> String {
+        let array = date.components(separatedBy: "-")
         if array.count == 3 {
             return "\(array[0])年\(array[1])月\(array[2])日"
         }else{
@@ -181,20 +207,20 @@ class ApprovalDetailViewController: UIViewController {
         }
     }
     
-    @IBAction func agreeApproval(sender: AnyObject) {
+    @IBAction func agreeApproval(_ sender: AnyObject) {
         handleEvent(true , opinion: nil)
     }
     
-    @IBAction func refuseApproval(sender: AnyObject) {
+    @IBAction func refuseApproval(_ sender: AnyObject) {
         showDialog()
     }
 
-    func handleEvent(isAgree : Bool , opinion : String?) {
+    func handleEvent(_ isAgree : Bool , opinion : String?) {
         let hud = showHUD()
         let manager = URLCollection()
         if let token = manager.validateToken() {
             var urlString = ""
-            var params : [String : AnyObject] = [:]
+            var params : [String : Any] = [:]
             if isOwn {
                 urlString = manager.cancelApproval
             }else{
@@ -204,26 +230,26 @@ class ApprovalDetailViewController: UIViewController {
             if opinion != nil && opinion?.characters.count > 0 {
                 params["opinion"] = opinion!
             }
-            manager.postRequest(urlString, params: params , encoding : .URLEncodedInURL , headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(urlString, params: params , encoding : URLEncoding.default , headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
-                        NSNotificationCenter.defaultCenter().postNotificationName("ApprovalListViewController", object: 3)
-                        self?.navigationController?.popViewControllerAnimated(true)
+                    if let code = json["Code"].int, code == 0 {
+                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "ApprovalListViewController"), object: 3)
+                        self?.navigationController?.popViewController(animated: true)
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
                 })
         }
     }
     
     func showDialog() {
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("RejectApproval") as! RejectApprovalViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "RejectApproval") as! RejectApprovalViewController
         let dialog = PopupDialog(viewController: controller)
         controller.popupDialog = dialog
         if let contentView = dialog.view as? PopupDialogContainerView {
@@ -234,22 +260,22 @@ class ApprovalDetailViewController: UIViewController {
         })
         cancelButton.buttonColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         cancelButton.titleColor = UIColor.hexStringToColor(FONTCOLOR)
-        cancelButton.titleFont = UIFont.systemFontOfSize(15)
+        cancelButton.titleFont = UIFont.systemFont(ofSize: 15)
         
         let okButton = PopupDialogButton(title: "确认", dismissOnTap: true, action: { [weak self] in
             let text = controller.reasonTextView.text
-            if text.characters.count > 0 && text.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count > 0 {
+            if text!.characters.count > 0 && text?.trimmingCharacters(in: .whitespacesAndNewlines).characters.count > 0 {
                 self?.handleEvent(false , opinion: text)
             }else{
                 self?.handleEvent(false , opinion: nil)
             }
             })
         okButton.buttonColor = UIColor.hexStringToColor(TEXTCOLOR)
-        okButton.titleColor = UIColor.whiteColor()
-        okButton.titleFont = UIFont.systemFontOfSize(15)
+        okButton.titleColor = UIColor.white
+        okButton.titleFont = UIFont.systemFont(ofSize: 15)
         dialog.addButtons([cancelButton , okButton])
-        dialog.buttonAlignment = .Horizontal
-        self.presentViewController(dialog, animated: true, completion: {
+        dialog.buttonAlignment = .horizontal
+        self.present(dialog, animated: true, completion: {
             
         })
     }

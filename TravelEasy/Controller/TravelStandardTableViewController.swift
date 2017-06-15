@@ -8,7 +8,7 @@
 
 import UIKit
 import SwiftyJSON
-import JLToast
+import Toaster
 
 class TravelStandardTableViewController: UITableViewController {
     
@@ -21,12 +21,12 @@ class TravelStandardTableViewController: UITableViewController {
     var arrKey : [String] = []
     var dicSelectedRow : [Int : Int] = [:]
     var dicBackSelectedRow : [Int : Int] = [:]
-    var indexPath : NSIndexPath!
-    var backIndexPath : NSIndexPath!
+    var indexPath : IndexPath!
+    var backIndexPath : IndexPath!
     var flightInfo : JSON!
     var backFlightInfo : JSON!
-    var goDate : NSDate!
-    var backDate : NSDate!
+    var goDate : Date!
+    var backDate : Date!
     var flag = 0
     
     override func viewDidLoad() {
@@ -60,8 +60,8 @@ class TravelStandardTableViewController: UITableViewController {
         style.lineSpacing = 5
         attributeString.addAttributes([NSParagraphStyleAttributeName : style], range: NSMakeRange(0, attributeString.length))
         waringLabel.attributedText = attributeString
-        let size = attributeString.boundingRectWithSize(CGSizeMake(SCREENWIDTH - 30, 1000), options: [.UsesLineFragmentOrigin , .UsesFontLeading], context: nil).size
-        self.tableView.tableHeaderView?.bounds = CGRectMake(0, 0, SCREENWIDTH, size.height + 20)
+        let size = attributeString.boundingRect(with: CGSize(width: SCREENWIDTH - 30, height: 1000), options: [.usesLineFragmentOrigin , .usesFontLeading], context: nil).size
+        self.tableView.tableHeaderView?.bounds = CGRect(x: 0, y: 0, width: SCREENWIDTH, height: size.height + 20)
         
         if let lowPriceWarningMsg = data["LowPriceWarningMsg"].string {
             let reasons = data["LowPriceReasons"].arrayValue
@@ -73,7 +73,7 @@ class TravelStandardTableViewController: UITableViewController {
             tableData[preNDaysWarningMsg] = reasons
             arrKey.append(preNDaysWarningMsg)
         }
-        tableView.registerNib(UINib(nibName: "HeaderView", bundle: NSBundle.mainBundle()), forHeaderFooterViewReuseIdentifier: "Header")
+        tableView.register(UINib(nibName: "HeaderView", bundle: Bundle.main), forHeaderFooterViewReuseIdentifier: "Header")
         
     }
 
@@ -83,68 +83,68 @@ class TravelStandardTableViewController: UITableViewController {
     }
 
     
-    @IBAction func submitTravelStandard(sender: AnyObject) {
+    @IBAction func submitTravelStandard(_ sender: AnyObject) {
         if dicSelectedRow.count == arrKey.count {
             if flag == 1 {
-                self.performSegueWithIdentifier("toWriteOrder", sender: self)
+                self.performSegue(withIdentifier: "toWriteOrder", sender: self)
             }else{
                 if backDate != nil {
-                    let flightlist = storyboard?.instantiateViewControllerWithIdentifier("FlightList") as! FlightListViewController
+                    let flightlist = storyboard?.instantiateViewController(withIdentifier: "FlightList") as! FlightListViewController
                     let scode = params["DepartureCode"] as! String
                     let isCity = params["DepartureCodeIsCity"] as! Bool
                     let aCode = params["ArrivalCode"] as! String
                     let aIsCity = params["ArrivalCodeIsCity"] as! Bool
-                    let formatter = NSDateFormatter()
+                    let formatter = DateFormatter()
                     formatter.dateFormat = "yyyy-MM-dd"
-                    let flightDate = formatter.stringFromDate(backDate)
+                    let flightDate = formatter.string(from: backDate)
                     var dicParam : [String : AnyObject] = [:]
-                    dicParam["DepartureCode"] = aCode
-                    dicParam["DepartureCodeIsCity"] = aIsCity
-                    dicParam["ArrivalCode"] = scode
-                    dicParam["ArrivalCodeIsCity"] = isCity
-                    dicParam["FlightDate"] = flightDate
+                    dicParam["DepartureCode"] = aCode as AnyObject
+                    dicParam["DepartureCodeIsCity"] = aIsCity as AnyObject
+                    dicParam["ArrivalCode"] = scode as AnyObject
+                    dicParam["ArrivalCodeIsCity"] = isCity as AnyObject
+                    dicParam["FlightDate"] = flightDate as AnyObject
                     dicParam["BunkType"] = params["BunkType"]
                     flightlist.params = dicParam
-                    flightlist.title = nextTitle.componentsSeparatedByString("-").reverse().joinWithSeparator("-")
-                    flightlist.indexPath = indexPath
+                    flightlist.title = nextTitle.components(separatedBy: "-").reversed().joined(separator: "-")
+                    flightlist.indexPath = (indexPath as! NSIndexPath) as IndexPath!
                     flightlist.flightInfo = flightInfo
-                    flightlist.goDate = goDate
-                    flightlist.backDate = backDate
+                    flightlist.goDate = (goDate as! NSDate) as Date!
+                    flightlist.backDate = (backDate as! NSDate) as Date!
                     flightlist.dicSelectedRow = dicSelectedRow
                     flightlist.travelData = data
                     flightlist.flag = 1
                     self.navigationController?.pushViewController(flightlist, animated: true)
                 }else{
-                    self.performSegueWithIdentifier("toWriteOrder", sender: self)
+                    self.performSegue(withIdentifier: "toWriteOrder", sender: self)
                 }
             }
         }else{
-            JLToast.makeText("请选择原因").show()
+            Toast(text: "请选择原因").show()
         }
     }
     
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         
         return arrKey.count
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return tableData[arrKey[section]]?.count ?? 0
     }
 
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         
-        cell.textLabel?.font = UIFont.systemFontOfSize(12)
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 12)
         
         if let text = tableData[arrKey[indexPath.section]]?[indexPath.row].string {
             cell.textLabel?.text = text
         }
-        if let row = dicSelectedRow[indexPath.section] where row == indexPath.row {
+        if let row = dicSelectedRow[indexPath.section], row == indexPath.row {
             cell.textLabel?.textColor = UIColor.hexStringToColor(TEXTCOLOR)
             cell.accessoryView = UIImageView(image: UIImage(named: "icon_radio_pr"))
         }else{
@@ -154,8 +154,8 @@ class TravelStandardTableViewController: UITableViewController {
         return cell
     }
     
-    override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let header = tableView.dequeueReusableHeaderFooterViewWithIdentifier("Header") as! HeaderView
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "Header") as! HeaderView
         header.backgroundColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         header.contentView.backgroundColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         if section == 0 {
@@ -171,15 +171,15 @@ class TravelStandardTableViewController: UITableViewController {
         return header
     }
     
-    override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 30
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 44
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         dicSelectedRow[indexPath.section] = indexPath.row
         tableView.reloadData()
     }
@@ -188,25 +188,25 @@ class TravelStandardTableViewController: UITableViewController {
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let controller = segue.destinationViewController as? WriteOrderViewController {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let controller = segue.destination as? WriteOrderViewController {
             if flag == 1 {
                 controller.travelPolicy = data
                 controller.dicTravelSelected = dicSelectedRow
-                controller.indexPath = indexPath
+                controller.indexPath = (indexPath as! NSIndexPath) as IndexPath!
                 controller.flightInfo = flightInfo
-                controller.goDate = goDate
+                controller.goDate = (goDate as! NSDate) as Date!
                 controller.backTravelPolicy = backData
                 controller.dicBackTravelSelected = dicBackSelectedRow
-                controller.backIndexPath = backIndexPath
+                controller.backIndexPath = (backIndexPath as! NSIndexPath) as IndexPath!
                 controller.backFlightInfo = backFlightInfo
-                controller.backDate = backDate
+                controller.backDate = (backDate as! NSDate) as Date!
             }else{
                 controller.travelPolicy = data
                 controller.dicTravelSelected = dicSelectedRow
-                controller.indexPath = indexPath
+                controller.indexPath = (indexPath as! NSIndexPath) as IndexPath!
                 controller.flightInfo = flightInfo
-                controller.goDate = goDate
+                controller.goDate = (goDate as! NSDate) as Date!
             }
             
         }

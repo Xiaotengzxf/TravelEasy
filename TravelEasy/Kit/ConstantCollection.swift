@@ -23,8 +23,8 @@ let FONT3 : CGFloat = 13
 let FONT4 : CGFloat = 12
 let FONT5 : CGFloat = 11
 
-let SCREENWIDTH = UIScreen.mainScreen().bounds.size.width
-let SCREENHEIGHT = UIScreen.mainScreen().bounds.size.height
+let SCREENWIDTH = UIScreen.main.bounds.size.width
+let SCREENHEIGHT = UIScreen.main.bounds.size.height
 
 let BUTTONBGCOLORNORMAL = "0071C4"
 let BUTTONBGCOLORHIGHLIGHT = "095B90"

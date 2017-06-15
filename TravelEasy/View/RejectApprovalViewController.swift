@@ -27,7 +27,7 @@ class RejectApprovalViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func closeDialog(sender: AnyObject) {
+    @IBAction func closeDialog(_ sender: AnyObject) {
         popupDialog.dismiss()
     }
 

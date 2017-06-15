@@ -41,7 +41,7 @@ class OrderTableViewCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
@@ -49,34 +49,34 @@ class OrderTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        cancelButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        cancelButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        cancelButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        cancelButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        payButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        payButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        payButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        payButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        refundButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        refundButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        refundButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        refundButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        changeButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        changeButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        changeButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        changeButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
-        netCheckInButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).CGColor
-        netCheckInButton.setTitleColor(UIColor.whiteColor(), forState: .Highlighted)
-        netCheckInButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), forState: .Disabled)
-        netCheckInButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), forState: .Highlighted)
+        cancelButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        cancelButton.setTitleColor(UIColor.white, for: .highlighted)
+        cancelButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        cancelButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        payButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        payButton.setTitleColor(UIColor.white, for: .highlighted)
+        payButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        payButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        refundButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        refundButton.setTitleColor(UIColor.white, for: .highlighted)
+        refundButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        refundButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        changeButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        changeButton.setTitleColor(UIColor.white, for: .highlighted)
+        changeButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        changeButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
+        netCheckInButton.layer.borderColor = UIColor.hexStringToColor(BUTTONBGCOLORNORMAL).cgColor
+        netCheckInButton.setTitleColor(UIColor.white, for: .highlighted)
+        netCheckInButton.setTitleColor(UIColor.hexStringToColor(LINECOLOR), for: .disabled)
+        netCheckInButton.setBackgroundImage(UIImage.imageWithColor(BUTTON2BGCOLORHIGHLIGHT), for: .highlighted)
     }
     
-    @IBAction func handleOrderEvent(sender: AnyObject) {
+    @IBAction func handleOrderEvent(_ sender: AnyObject) {
         let button = sender as! UIButton
-        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 2 , userInfo: ["tag" : button.tag + 10 * tag])
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "OrderListTableViewController"), object: 2 , userInfo: ["tag" : button.tag + 10 * tag])
     }
 
-    @IBAction func showFlightDetail(sender: AnyObject) {
-        NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 1 , userInfo: ["tag" : tag])
+    @IBAction func showFlightDetail(_ sender: AnyObject) {
+        NotificationCenter.default.post(name: Notification.Name(rawValue: "OrderListTableViewController"), object: 1 , userInfo: ["tag" : tag])
     }
 }

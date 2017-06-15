@@ -13,10 +13,10 @@ class SectionView: UIView {
     @IBOutlet weak var labelCityName: UILabel!
     
     class func viewFromNibNamed()->SectionView {
-        return NSBundle.mainBundle().loadNibNamed("SectionView", owner: self, options: nil)![0] as! SectionView
+        return Bundle.main.loadNibNamed("SectionView", owner: self, options: nil)![0] as! SectionView
     }
    
-    func addData(string:String){
+    func addData(_ string:String){
         self.labelCityName.text = string
     }
 

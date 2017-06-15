@@ -22,7 +22,7 @@ class FlightPolicyViewController: UIViewController {
     @IBOutlet weak var signPolicyLabel: UILabel!
     var policy : JSON!
     var flightInfo : JSON!
-    var indexPath : NSIndexPath!
+    var indexPath : IndexPath!
     weak var popupDidalog : PopupDialog?
     var flag = 0
     
@@ -38,11 +38,11 @@ class FlightPolicyViewController: UIViewController {
         bunkNameLabel.text = flightInfo["Bunks" , indexPath.row , "BunkName"].string
         
         let attributeString = NSMutableAttributedString(string: "¥\(flightInfo["Bunks" , indexPath.row , "BunkPrice" , "FactBunkPrice"].stringValue)")
-        attributeString.addAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(TEXTCOLOR) , NSFontAttributeName : UIFont.systemFontOfSize(11)], range: NSMakeRange(0, 1))
-        attributeString.addAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(TEXTCOLOR) , NSFontAttributeName : UIFont.systemFontOfSize(18)], range: NSMakeRange(1, attributeString.length - 1))
+        attributeString.addAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(TEXTCOLOR) , NSFontAttributeName : UIFont.systemFont(ofSize: 11)], range: NSMakeRange(0, 1))
+        attributeString.addAttributes([NSForegroundColorAttributeName : UIColor.hexStringToColor(TEXTCOLOR) , NSFontAttributeName : UIFont.systemFont(ofSize: 18)], range: NSMakeRange(1, attributeString.length - 1))
         bunkPriceLabel.attributedText = attributeString
         if flag == 1 {
-            bookButton.setTitle("确定", forState: .Normal)
+            bookButton.setTitle("确定", for: UIControlState())
         }
     }
 
@@ -51,11 +51,11 @@ class FlightPolicyViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func closeView(sender: AnyObject) {
+    @IBAction func closeView(_ sender: AnyObject) {
         popupDidalog?.dismiss()
     }
     
-    @IBAction func bookAirportTicket(sender: AnyObject) {
+    @IBAction func bookAirportTicket(_ sender: AnyObject) {
         popupDidalog?.dismiss()
     }
 

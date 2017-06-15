@@ -8,11 +8,12 @@
 
 import UIKit
 import MJRefresh
-import JLToast
+import Toaster
 import SwiftyJSON
 import PopupDialog
+import Alamofire
 
-class OrderListTableViewController: UITableViewController {
+class OrderListTableViewController: UITableViewController, UISearchBarDelegate, UISearchResultsUpdating {
     
     var pageNumber = 1
     var pageSize = 10
@@ -21,6 +22,8 @@ class OrderListTableViewController: UITableViewController {
     var selectedRow = -1
     var emptyView : EmptyView!
     var bEmpty = true
+    var searchController: UISearchController!
+    var passengerName = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,19 +40,26 @@ class OrderListTableViewController: UITableViewController {
             self?.getOrderList()
         })
         emptyView = EmptyManager.getInstance.insertEmptyView(with: self.navigationController!.view!, top: 64, emptyType: .noData)
-        emptyView.hidden = true
+        emptyView.isHidden = true
         self.tableView.mj_header.beginRefreshing()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(OrderListTableViewController.handleNotification(_:)), name: "OrderListTableViewController", object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(OrderListTableViewController.handleNotification(_:)), name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: nil)
+        
+        searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchBar.sizeToFit()
+        tableView.tableHeaderView = searchController.searchBar
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        emptyView.hidden = bEmpty
+        emptyView.isHidden = bEmpty
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        emptyView.hidden = true
+        emptyView.isHidden = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -58,20 +68,20 @@ class OrderListTableViewController: UITableViewController {
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Methods
     func getOrderList() {
-        emptyView.hidden = true
+        emptyView.isHidden = true
         bEmpty = true
         let manager = URLCollection()
         if let token = manager.validateToken() {
-            manager.getRequest(manager.getMyFlightOrders, params: ["pageNumber" : pageNumber , "pageSize" : pageSize], headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+            manager.getRequest(manager.getMyFlightOrders, params: ["pageNumber" : pageNumber , "pageSize" : pageSize, "passengerName" : passengerName], headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
                 self?.tableView.mj_header.endRefreshing()
                 self?.tableView.mj_footer.endRefreshing()
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
+                    if let code = json["Code"].int, code == 0 {
                         self?.totalCount = json["TotalCount"].intValue
                         let array = json["Orders"].arrayValue
                         self?.arrOrder += array
@@ -80,16 +90,16 @@ class OrderListTableViewController: UITableViewController {
                             self?.tableView.mj_footer.endRefreshingWithNoMoreData()
                         }
                         if self!.pageNumber == 1 && array.count == 0 {
-                            self?.emptyView.hidden = false
+                            self?.emptyView.isHidden = false
                             self?.bEmpty = false
                         }
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
                 })
         }
@@ -97,12 +107,12 @@ class OrderListTableViewController: UITableViewController {
 
     // MARK: - Table view data source
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return arrOrder.count
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) as! OrderTableViewCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! OrderTableViewCell
         let order = arrOrder[indexPath.row]
         cell.tag = indexPath.row
         cell.cityLabel.text = "\(order["DepartureCityName"].stringValue)-\(order["ArrivalCityName"].stringValue)"
@@ -114,7 +124,7 @@ class OrderListTableViewController: UITableViewController {
         cell.priceLabel.text = "¥\(order["PaymentAmount"].intValue)"
         let time = order["DepartureDateTime"].stringValue
         if time.characters.count == 16 {
-            cell.dateLabel.text = "\(time.substringWithRange(time.startIndex.advancedBy(5)..<time.startIndex.advancedBy(7)))月\(time.substringWithRange(time.startIndex.advancedBy(8)..<time.startIndex.advancedBy(10)))日 \(time.substringFromIndex(time.endIndex.advancedBy(-5)))"
+            cell.dateLabel.text = "\(time.substring(with: time.characters.index(time.startIndex, offsetBy: 5)..<time.characters.index(time.startIndex, offsetBy: 7)))月\(time.substring(with: time.characters.index(time.startIndex, offsetBy: 8)..<time.characters.index(time.startIndex, offsetBy: 10)))日 \(time.substring(from: time.characters.index(time.endIndex, offsetBy: -5)))"
         }else{
             cell.dateLabel.text = time
         }
@@ -125,89 +135,89 @@ class OrderListTableViewController: UITableViewController {
         let canChange = order["CanChange"].boolValue
         let canNetCheckIn = order["CanNetCheckIn"].boolValue
         if canCancel {
-            cell.cancelButton.hidden = false
+            cell.cancelButton.isHidden = false
             cell.cancelButtonWidthConstraint.constant = 50
             cell.payToCancelLConstraint.constant = 10
         }else{
-            cell.cancelButton.hidden = true
+            cell.cancelButton.isHidden = true
             cell.cancelButtonWidthConstraint.constant = 0
             cell.payToCancelLConstraint.constant = 0
         }
         if canPayment {
-            cell.payButton.hidden = false
+            cell.payButton.isHidden = false
             cell.payButtonWidthConstraint.constant = 50
             cell.refundToPayLConstraint.constant = 10
         }else{
-            cell.payButton.hidden = true
+            cell.payButton.isHidden = true
             cell.payButtonWidthConstraint.constant = 0
             cell.refundToPayLConstraint.constant = 0
         }
         if canReturn {
-            cell.refundButton.hidden = false
+            cell.refundButton.isHidden = false
             cell.refundButtonWidthConstraint.constant = 50
             cell.changeToRefundLConstraint.constant = 10
         }else{
-            cell.refundButton.hidden = true
+            cell.refundButton.isHidden = true
             cell.refundButtonWidthConstraint.constant = 0
             cell.changeToRefundLConstraint.constant = 0
         }
         if canChange {
-            cell.changeButton.hidden = false
+            cell.changeButton.isHidden = false
             cell.changeButtonWidthConstraint.constant = 50
             cell.netCheckInToChangeLConsraint.constant = 10
         }else{
-            cell.changeButton.hidden = true
+            cell.changeButton.isHidden = true
             cell.changeButtonWidthConstraint.constant = 0
             cell.netCheckInToChangeLConsraint.constant = 0
         }
         if canNetCheckIn {
-            cell.netCheckInButton.hidden = false
+            cell.netCheckInButton.isHidden = false
             cell.netCheckInButtonWidthConstraint.constant = 70
         }else{
-            cell.netCheckInButton.hidden = true
+            cell.netCheckInButton.isHidden = true
             cell.netCheckInButtonWidthConstraint.constant = 0
         }
         if !canCancel && !canPayment && !canReturn && !canChange && !canNetCheckIn {
-            cell.buttonsView.hidden = true
+            cell.buttonsView.isHidden = true
             cell.buttonsViewHeightLConstraint.constant = 0
         }else{
-            cell.buttonsView.hidden = false
+            cell.buttonsView.isHidden = false
             cell.buttonsViewHeightLConstraint.constant = 44
         }
-        cell.selectionStyle = .None
+        cell.selectionStyle = .none
         return cell
     }
  
-    override func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 160
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let controller = segue.destinationViewController as? OrderDetailViewController {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let controller = segue.destination as? OrderDetailViewController {
             controller.orderDetail = arrOrder[selectedRow]
-        }else if let controller = segue.destinationViewController as? OrderEventTableViewController {
+        }else if let controller = segue.destination as? OrderEventTableViewController {
             controller.orderId = arrOrder[selectedRow]["OrderId"].intValue
             controller.title = "退票"
-        }else if let controller = segue.destinationViewController as? NetCheckInViewController {
+        }else if let controller = segue.destination as? NetCheckInViewController {
             controller.orderId = arrOrder[selectedRow]["OrderId"].intValue
         }
     }
     
     
-    func handleNotification(sender : NSNotification)  {
+    func handleNotification(_ sender : Notification)  {
         if let tag = sender.object as? Int {
             if tag == 1 {
                 if let row = sender.userInfo?["tag"] as? Int {
                     selectedRow = row
-                    self.performSegueWithIdentifier("toOrderDetail", sender: self)
+                    self.performSegue(withIdentifier: "toOrderDetail", sender: self)
                 }
             }else if tag == 2 {
                 if let row = sender.userInfo?["tag"] as? Int {
@@ -218,16 +228,16 @@ class OrderListTableViewController: UITableViewController {
                     case 2:
                         payOrder()
                     case 3:
-                        self.performSegueWithIdentifier("toOrderEvent", sender: self)
+                        self.performSegue(withIdentifier: "toOrderEvent", sender: self)
                     case 4:
-                        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("OrderEvent") as! OrderEventTableViewController
+                        let controller = self.storyboard?.instantiateViewController(withIdentifier: "OrderEvent") as! OrderEventTableViewController
                         controller.flag = 1
                         controller.orderDetail = arrOrder[selectedRow]
                         controller.title = "改签原因"
                         self.navigationController?.pushViewController(controller, animated: true)
                         
                     case 5:
-                        self.performSegueWithIdentifier("toNetCheckIn", sender: self)
+                        self.performSegue(withIdentifier: "toNetCheckIn", sender: self)
                     default:
                         fatalError()
                     }
@@ -238,37 +248,37 @@ class OrderListTableViewController: UITableViewController {
         }
     }
 
-    func cancelFlight(row : Int) {
-        let alertController = UIAlertController(title: "提示", message: "您确定要取消该订单", preferredStyle: .Alert)
-        alertController.addAction(UIAlertAction(title: "取消", style: .Cancel, handler: { (action) in
+    func cancelFlight(_ row : Int) {
+        let alertController = UIAlertController(title: "提示", message: "您确定要取消该订单", preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
             
         }))
-        alertController.addAction(UIAlertAction(title: "确定", style: .Default, handler: {[weak self] (action) in
+        alertController.addAction(UIAlertAction(title: "确定", style: .default, handler: {[weak self] (action) in
             let orderId = self!.arrOrder[row]["OrderId"].intValue
             self?.requestCancelFlight(orderId)
         }))
-        self.presentViewController(alertController, animated: true) { 
+        self.present(alertController, animated: true) { 
             
         }
     }
     
-    func requestCancelFlight(orderId : Int)  {
+    func requestCancelFlight(_ orderId : Int)  {
         let manager = URLCollection()
         if let token = manager.validateToken() {
             let hud = showHUD()
-            manager.postRequest(manager.cancelApply, params: ["orderId" : orderId] , encoding : .URLEncodedInURL, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(manager.cancelApply, params: ["orderId" : orderId] , encoding : URLEncoding.default, headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let json = jsonObject {
-                    if let code = json["Code"].int where code == 0 {
-                        JLToast.makeText("取消成功").show()
+                    if let code = json["Code"].int, code == 0 {
+                        Toast(text: "取消成功").show()
                         self?.tableView.mj_header.beginRefreshing()
                     }else{
                         if let message = json["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络!").show()
+                    Toast(text: "网络不给力，请检查网络!").show()
                 }
                 })
         }
@@ -276,7 +286,7 @@ class OrderListTableViewController: UITableViewController {
     
     func payOrder() {
         let orderDetail = arrOrder[selectedRow]
-        let controller = self.storyboard?.instantiateViewControllerWithIdentifier("ConfirmOrder") as! ConfirmOrderViewController
+        let controller = self.storyboard?.instantiateViewController(withIdentifier: "ConfirmOrder") as! ConfirmOrderViewController
         controller.passengerName = orderDetail["PassengerName"].stringValue
         controller.travelLine = orderDetail["DepartureCityName"].stringValue + "-" + orderDetail["ArrivalCityName"].stringValue
         controller.date = orderDetail["DepartureDateTime"].stringValue + " 出发"
@@ -292,41 +302,68 @@ class OrderListTableViewController: UITableViewController {
         })
         cancelButton.buttonColor = UIColor.hexStringToColor(BACKGROUNDCOLOR)
         cancelButton.titleColor = UIColor.hexStringToColor(FONTCOLOR)
-        cancelButton.titleFont = UIFont.systemFontOfSize(15)
+        cancelButton.titleFont = UIFont.systemFont(ofSize: 15)
         
         let okButton = PopupDialogButton(title: "确认支付", dismissOnTap: true, action: { [weak self] in
             self?.askOrderConfirmByCorpCredit(orderDetail["OrderId"].intValue)
             
             })
         okButton.buttonColor = UIColor.hexStringToColor(TEXTCOLOR)
-        okButton.titleColor = UIColor.whiteColor()
-        okButton.titleFont = UIFont.systemFontOfSize(15)
+        okButton.titleColor = UIColor.white
+        okButton.titleFont = UIFont.systemFont(ofSize: 15)
         dialog.addButtons([cancelButton , okButton])
-        dialog.buttonAlignment = .Horizontal
-        self.presentViewController(dialog, animated: true, completion: {
+        dialog.buttonAlignment = .horizontal
+        self.present(dialog, animated: true, completion: {
             
         })
     }
     
-    func askOrderConfirmByCorpCredit(askOrderId : Int) {
+    func askOrderConfirmByCorpCredit(_ askOrderId : Int) {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId], encoding : .URLEncodedInURL ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: [ "askOrderId" : askOrderId], encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.tableView.mj_header.beginRefreshing()
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
-                })
+            })
         }
+    }
+    
+    
+    // delegate
+    func updateSearchResults(for searchController: UISearchController) {
+        
+        
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        if let strSearchText = searchBar.text {
+            passengerName = strSearchText
+            self.pageNumber = 1
+            self.arrOrder.removeAll()
+            self.tableView.reloadData()
+            self.getOrderList()
+        }
+        
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = nil
+        passengerName = ""
+        self.pageNumber = 1
+        self.arrOrder.removeAll()
+        self.tableView.reloadData()
+        self.getOrderList()
     }
 
 }

@@ -8,7 +8,8 @@
 
 import UIKit
 import SwiftyJSON
-import JLToast
+import Toaster
+import Alamofire
 
 class NetCheckInViewController: UIViewController {
     
@@ -34,51 +35,51 @@ class NetCheckInViewController: UIViewController {
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.getRequest(manager.getOrderDetail, params: ["orderId" : orderId], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                hud.hideAnimated(true)
+            manager.getRequest(manager.getOrderDetail, params: ["orderId" : orderId as AnyObject], headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {
                         self?.orderDetail = model["Order"]
                         self?.passengerLabel.text = self?.orderDetail["Passenger" , "PassengerName"].string
                     }else{
                         if let message = model["Message"].string {
-                            JLToast.makeText(message).show()
+                            Toast(text: message).show()
                         }
                     }
                 }else{
-                    JLToast.makeText("网络不给力，请检查网络！").show()
+                    Toast(text: "网络不给力，请检查网络！").show()
                 }
             })
         }
     }
     
-    func differTime(dateString : String) -> String {
-        let formatter = NSDateFormatter()
+    func differTime(_ dateString : String) -> String {
+        let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd hh:mm"
-        let date = formatter.dateFromString(dateString)
-        let differ = date?.timeIntervalSinceDate(NSDate())
-        return "离网上机票还有\(differ! / 60 * 60)小时\(differ! % 60)分钟"
+        let date = formatter.date(from: dateString)
+        let differ = date?.timeIntervalSince(Date())
+        return "离网上机票还有\(differ! / 60 * 60)小时\(differ!.truncatingRemainder(dividingBy: 60))分钟"
     }
     
-    @IBAction func choosePosition(sender: AnyObject) {
+    @IBAction func choosePosition(_ sender: AnyObject) {
         let button = sender as! UIButton
-        if button.selected {
+        if button.isSelected {
             positions.remove(button.tag - 1)
-            button.selected = false
+            button.isSelected = false
         }else{
             positions.insert(button.tag - 1)
-            button.selected = true
+            button.isSelected = true
         }
     }
     
-    @IBAction func submitPostition(sender: AnyObject) {
+    @IBAction func submitPostition(_ sender: AnyObject) {
         contentTextField.resignFirstResponder()
         if positions.count > 0 {
             var content = ""
             if positions.contains(5) {
                 content = contentTextField.text ?? ""
-                if content.characters.count == 0 || content.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()).characters.count == 0 {
-                    JLToast.makeText("请输入其他原因！").show()
+                if content.characters.count == 0 || content.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).characters.count == 0 {
+                    Toast(text: "请输入其他原因！").show()
                     return
                 }
             }
@@ -86,19 +87,19 @@ class NetCheckInViewController: UIViewController {
             let manager = URLCollection()
             let hud = showHUD()
             if let token = manager.validateToken() {
-                manager.postRequest(manager.netCheckInApply, params: ["orderId" : orderId , "seatRequirement" : positions.map{arrPostion[$0]}.joinWithSeparator(",")], encoding : .URLEncodedInURL , headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
-                    hud.hideAnimated(true)
+                manager.postRequest(manager.netCheckInApply, params: ["orderId" : orderId as AnyObject , "seatRequirement" : positions.map{arrPostion[$0]}.joined(separator: ",") as AnyObject], encoding : URLEncoding.default , headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+                    hud.hide(animated: true)
                     if let model = jsonObject {
                         if model["Code"].int == 0 {
-                            NSNotificationCenter.defaultCenter().postNotificationName("OrderListTableViewController", object: 3)
-                            let controller = self?.storyboard?.instantiateViewControllerWithIdentifier("OrderSuccess") as! OrderSuccessViewController
+                            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "OrderListTableViewController"), object: 3)
+                            let controller = self?.storyboard?.instantiateViewController(withIdentifier: "OrderSuccess") as! OrderSuccessViewController
                             controller.intApproval = 2
                             controller.flightInfo = self!.orderDetail
                             self?.navigationController?.pushViewController(controller, animated: true)
                             if var viewControllers = self?.navigationController?.viewControllers {
-                                for (index , viewController) in  viewControllers.enumerate() {
+                                for (index , viewController) in  viewControllers.enumerated() {
                                     if viewController is NetCheckInViewController {
-                                        viewControllers.removeAtIndex(index)
+                                        viewControllers.remove(at: index)
                                         break
                                     }
                                 }
@@ -106,16 +107,16 @@ class NetCheckInViewController: UIViewController {
                             }
                         }else{
                             if let message = model["Message"].string {
-                                JLToast.makeText(message).show()
+                                Toast(text: message).show()
                             }
                         }
                     }else{
-                        JLToast.makeText("网络不给力，请检查网络！").show()
+                        Toast(text: "网络不给力，请检查网络！").show()
                     }
                     })
             }
         }else{
-            JLToast.makeText("请选择值机座位偏好").show()
+            Toast(text: "请选择值机座位偏好").show()
         }
     }
     /*

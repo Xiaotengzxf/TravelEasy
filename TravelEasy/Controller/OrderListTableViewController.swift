@@ -12,6 +12,7 @@ import Toaster
 import SwiftyJSON
 import PopupDialog
 import Alamofire
+import MBProgressHUD
 
 class OrderListTableViewController: UITableViewController, UISearchBarDelegate, UISearchResultsUpdating {
     
@@ -24,6 +25,9 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
     var bEmpty = true
     var searchController: UISearchController!
     var passengerName = ""
+    var bSearchBarIsEditing = false
+    var bShowLoadingHUD = false
+    var vTranslucent: UIView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,18 +53,22 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
         searchController.dimsBackgroundDuringPresentation = false
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.sizeToFit()
-        tableView.tableHeaderView = searchController.searchBar
         searchController.searchBar.delegate = self
+        tableView.tableHeaderView = searchController.searchBar
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         emptyView.isHidden = bEmpty
+        tableView.tableHeaderView?.isHidden = false
+        searchController.searchBar.isHidden = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         emptyView.isHidden = true
+        tableView.tableHeaderView?.isHidden = true
+        searchController.searchBar.isHidden = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -77,10 +85,18 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
         emptyView.isHidden = true
         bEmpty = true
         let manager = URLCollection()
+        var hud : MBProgressHUD?
         if let token = manager.validateToken() {
+            if bShowLoadingHUD {
+                hud = showHUD()
+                bShowLoadingHUD = false
+            }
             manager.getRequest(manager.getMyFlightOrders, params: ["pageNumber" : pageNumber , "pageSize" : pageSize, "passengerName" : passengerName], headers: ["Token" : token], callback: {[weak self] (jsonObject, error) in
                 self?.tableView.mj_header.endRefreshing()
                 self?.tableView.mj_footer.endRefreshing()
+                if hud != nil {
+                    hud?.hide(animated: true)
+                }
                 if let json = jsonObject {
                     if let code = json["Code"].int, code == 0 {
                         self?.totalCount = json["TotalCount"].intValue
@@ -216,7 +232,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
     func handleNotification(_ sender : Notification)  {
         if let tag = sender.object as? Int {
             if tag == 1 {
-                if searchController.isActive {
+                if bSearchBarIsEditing {
                     return
                 }
                 if let row = sender.userInfo?["tag"] as? Int {
@@ -224,7 +240,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
                     self.performSegue(withIdentifier: "toOrderDetail", sender: self)
                 }
             }else if tag == 2 {
-                if searchController.isActive {
+                if bSearchBarIsEditing {
                     return
                 }
                 if let row = sender.userInfo?["tag"] as? Int {
@@ -355,6 +371,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if let strSearchText = searchBar.text {
+            bShowLoadingHUD = true
             passengerName = strSearchText
             self.pageNumber = 1
             self.arrOrder.removeAll()
@@ -365,12 +382,31 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        bShowLoadingHUD = true
         searchBar.text = nil
         passengerName = ""
         self.pageNumber = 1
         self.arrOrder.removeAll()
         self.tableView.reloadData()
         self.getOrderList()
+    }
+    
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        bSearchBarIsEditing = true
+        if vTranslucent == nil {
+            vTranslucent = UIView()
+            vTranslucent?.frame = CGRect(x: 0, y: 44, width: SCREENWIDTH, height: SCREENHEIGHT - 64 - 44)
+            vTranslucent?.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+            tableView.addSubview(vTranslucent!)
+        }
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        bSearchBarIsEditing = false
+        if vTranslucent != nil {
+            vTranslucent?.removeFromSuperview()
+            vTranslucent = nil
+        }
     }
 
 }

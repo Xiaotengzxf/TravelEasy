@@ -1002,6 +1002,7 @@
 				89DE40C41EF23F8100697D87 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

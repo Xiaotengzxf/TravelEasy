@@ -29,7 +29,7 @@ class changeTicketViewController: UIViewController , XZCalendarControllerDelegat
             let dateString = date.components(separatedBy: " ")[0]
             airportTimeLabel.text = dateString
             let dateArray = dateString.components(separatedBy: "-").map{UInt($0)!}
-            dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
+            dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] , month: dateArray[1] , day: dateArray[2] )
             timeLabel.text = "\(dateModel.month < 10 ? "0\(dateModel.month )" : "\(dateModel.month)")月\(dateModel.day < 10 ? "0\(dateModel.day)" : "\(dateModel.day)")日\(dateModel.getWeek()!)"
         }
         

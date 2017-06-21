@@ -441,7 +441,7 @@ class WriteOrderViewController: UIViewController {
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
         let dateArray = dateString.components(separatedBy: "-").map{UInt($0)!}
-        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
+        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0], month: dateArray[1], day: dateArray[2])
         return "\(dateModel!.month < 10 ? "0\(dateModel!.month )" : "\(dateModel!.month)")月\(dateModel!.day < 10 ? "0\(dateModel!.day)" : "\(dateModel!.day)")日\(dateModel!.getWeek()!)"
     }
     

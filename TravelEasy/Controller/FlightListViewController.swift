@@ -51,7 +51,7 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
         if let dateString = params["FlightDate"] as? String {
             let dateArray = dateString.components(separatedBy: "-").map({UInt($0)})
             let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
-            dateLabel.text = "\((dateModel?.month)! < 10 ? "0\(dateModel?.month )" : "\(dateModel?.month)")月\((dateModel?.day)! < 10 ? "0\(dateModel?.day)" : "\(dateModel?.day)")日\(dateModel?.getWeek()!)"
+            dateLabel.text = "\(dateModel!.month < 10 ? "0\(dateModel!.month)" : "\(dateModel!.month)")月\(dateModel!.day < 10 ? "0\(dateModel!.day)" : "\(dateModel!.day)")日\(dateModel!.getWeek()!)"
             if compareDateWithOtherDate(goDate) <= 0 {
                 theDayBeforeButton.isEnabled = false
             }
@@ -96,7 +96,7 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
                         writeOrder.indexPath = indexPath
                         writeOrder.flightInfo = flights[indexPath.section]
                         writeOrder.travelPolicy = backFlightInfo
-                        writeOrder.goDate = (self.goDate as! NSDate) as Date!
+                        writeOrder.goDate = (self.goDate! as NSDate) as Date!
                         writeOrder.flag = 1
                         writeOrder.reason = reason
                         self.navigationController?.pushViewController(writeOrder, animated: true)
@@ -402,8 +402,8 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
         let dateArray = dateString.components(separatedBy: "-").map{UInt($0)!}
-        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
-        dateLabel.text = "\((dateModel?.month)! < 10 ? "0\(dateModel?.month )" : "\(dateModel?.month)")月\((dateModel?.day)! < 10 ? "0\(dateModel?.day)" : "\(dateModel?.day)")日\(dateModel?.getWeek()!)"
+        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] , month: dateArray[1], day: dateArray[2])
+        dateLabel.text = "\(dateModel!.month < 10 ? "0\(dateModel!.month)" : "\(dateModel!.month)")月\(dateModel!.day < 10 ? "0\(dateModel!.day)" : "\(dateModel!.day)")日\(dateModel!.getWeek()!)"
         
         params["FlightDate"] = dateString as AnyObject
         
@@ -427,8 +427,8 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: date)
         let dateArray = dateString.components(separatedBy: "-").map{UInt($0)!}
-        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0] ?? 0, month: dateArray[1] ?? 0, day: dateArray[2] ?? 0)
-        dateLabel.text = "\((dateModel?.month)! < 10 ? "0\(dateModel?.month )" : "\(dateModel?.month)")月\((dateModel?.day)! < 10 ? "0\(dateModel?.day)" : "\(dateModel?.day)")日\(dateModel?.getWeek()!)"
+        let dateModel = XZCalendarModel.calendarDay(withYear: dateArray[0], month: dateArray[1], day: dateArray[2])
+        dateLabel.text = "\(dateModel!.month < 10 ? "0\(dateModel!.month )" : "\(dateModel!.month)")月\(dateModel!.day < 10 ? "0\(dateModel!.day)" : "\(dateModel!.day)")日\(dateModel!.getWeek()!)"
         
         params["FlightDate"] = dateString as AnyObject
         getFlightList()
@@ -536,20 +536,20 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
             if flag == 1 {
                 controller.data = travelData
                 controller.backData = backTravelData
-                controller.indexPath = (indexPath as! NSIndexPath) as IndexPath!
+                controller.indexPath = (indexPath! as NSIndexPath) as IndexPath!
                 controller.flightInfo = flightInfo
-                controller.goDate = (goDate as! NSDate) as Date!
+                controller.goDate = (goDate! as NSDate) as Date!
                 controller.backData = backTravelData
-                controller.backIndexPath = (backIndexPath as! NSIndexPath) as IndexPath!
+                controller.backIndexPath = (backIndexPath! as NSIndexPath) as IndexPath!
                 controller.backFlightInfo = backFlightInfo
-                controller.backDate = (backDate as! NSDate) as Date!
+                controller.backDate = (backDate! as NSDate) as Date!
                 controller.flag = flag
             }else{
                 controller.data = travelData
-                controller.indexPath = (indexPath as! NSIndexPath) as IndexPath!
+                controller.indexPath = (indexPath! as NSIndexPath) as IndexPath!
                 controller.flightInfo = flightInfo
-                controller.goDate = (goDate as! NSDate) as Date!
-                controller.backDate = (backDate as! NSDate) as Date!
+                controller.goDate = (goDate! as NSDate) as Date!
+                controller.backDate = (backDate! as NSDate) as Date!
                 controller.flag = flag
                 controller.nextTitle = title
                 controller.params = params

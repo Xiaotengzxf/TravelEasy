@@ -87,7 +87,7 @@ class AuthorizeDetailViewController: UIViewController {
             let time = departureDateTime[0].components(separatedBy: "-").map{UInt($0)}
             if time.count == 3 {
                 let calender = XZCalendarModel.calendarDay(withYear: time[0]!, month: time[1]!, day: time[2]!)
-                goDateLabel.text = "\((calender?.month)! > 10 ? "\(calender?.month)" : "0\(calender?.month)")月\((calender?.day)! > 10 ? "\(calender?.day)" : "0\(calender?.day)")日\(calender?.getWeek()!)"
+                goDateLabel.text = "\(calender!.month > 10 ? "\(calender!.month)" : "0\(calender!.month)")月\(calender!.day > 10 ? "\(calender!.day)" : "0\(calender!.day)")日\(calender!.getWeek()!)"
             }
         }
         let ArrivalDateTime = authorizeDetail["FlightOrder" , "Route" , "Arrival" , "DateTime"].stringValue.components(separatedBy: " ")
@@ -96,7 +96,7 @@ class AuthorizeDetailViewController: UIViewController {
             let time = ArrivalDateTime[0].components(separatedBy: "-").map{UInt($0)}
             if time.count == 3 {
                 let calender = XZCalendarModel.calendarDay(withYear: time[0]!, month: time[1]!, day: time[2]!)
-                backDateLabel.text = "\((calender?.month)! > 10 ? "\(calender?.month)" : "0\(calender?.month)")月\((calender?.day)! > 10 ? "\(calender?.day)" : "0\(calender?.day)")日\(calender?.getWeek()!)"
+                backDateLabel.text = "\(calender!.month > 10 ? "\(calender!.month)" : "0\(calender!.month)")月\(calender!.day > 10 ? "\(calender!.day)" : "0\(calender!.day)")日\(calender!.getWeek()!)"
             }
         }
         goAirportLabel.text = "\(authorizeDetail["FlightOrder" , "Route" , "Departure" , "AirportName"].stringValue)机场\(authorizeDetail["FlightOrder" , "Route" , "Departure" , "Terminal"].stringValue)"

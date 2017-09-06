@@ -26,7 +26,7 @@ class TravelStandardTableViewController: UITableViewController {
     var flightInfo : JSON!
     var backFlightInfo : JSON!
     var goDate : Date!
-    var backDate : Date!
+    var backDate : Date?
     var flag = 0
     
     override func viewDidLoad() {
@@ -96,7 +96,7 @@ class TravelStandardTableViewController: UITableViewController {
                     let aIsCity = params["ArrivalCodeIsCity"] as! Bool
                     let formatter = DateFormatter()
                     formatter.dateFormat = "yyyy-MM-dd"
-                    let flightDate = formatter.string(from: backDate)
+                    let flightDate = formatter.string(from: backDate!)
                     var dicParam : [String : AnyObject] = [:]
                     dicParam["DepartureCode"] = aCode as AnyObject
                     dicParam["DepartureCodeIsCity"] = aIsCity as AnyObject
@@ -106,10 +106,10 @@ class TravelStandardTableViewController: UITableViewController {
                     dicParam["BunkType"] = params["BunkType"]
                     flightlist.params = dicParam
                     flightlist.title = nextTitle.components(separatedBy: "-").reversed().joined(separator: "-")
-                    flightlist.indexPath = (indexPath as! NSIndexPath) as IndexPath!
+                    flightlist.indexPath = indexPath
                     flightlist.flightInfo = flightInfo
-                    flightlist.goDate = (goDate as! NSDate) as Date!
-                    flightlist.backDate = (backDate as! NSDate) as Date!
+                    flightlist.goDate = goDate
+                    flightlist.backDate = backDate
                     flightlist.dicSelectedRow = dicSelectedRow
                     flightlist.travelData = data
                     flightlist.flag = 1
@@ -193,20 +193,20 @@ class TravelStandardTableViewController: UITableViewController {
             if flag == 1 {
                 controller.travelPolicy = data
                 controller.dicTravelSelected = dicSelectedRow
-                controller.indexPath = (indexPath as! NSIndexPath) as IndexPath!
+                controller.indexPath = indexPath
                 controller.flightInfo = flightInfo
-                controller.goDate = (goDate as! NSDate) as Date!
+                controller.goDate = goDate
                 controller.backTravelPolicy = backData
                 controller.dicBackTravelSelected = dicBackSelectedRow
-                controller.backIndexPath = (backIndexPath as! NSIndexPath) as IndexPath!
+                controller.backIndexPath = backIndexPath
                 controller.backFlightInfo = backFlightInfo
-                controller.backDate = (backDate as! NSDate) as Date!
+                controller.backDate = backDate
             }else{
                 controller.travelPolicy = data
                 controller.dicTravelSelected = dicSelectedRow
-                controller.indexPath = (indexPath as! NSIndexPath) as IndexPath!
+                controller.indexPath = indexPath
                 controller.flightInfo = flightInfo
-                controller.goDate = (goDate as! NSDate) as Date!
+                controller.goDate = goDate
             }
             
         }

@@ -96,7 +96,7 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
                         writeOrder.indexPath = indexPath
                         writeOrder.flightInfo = flights[indexPath.section]
                         writeOrder.travelPolicy = backFlightInfo
-                        writeOrder.goDate = (self.goDate! as NSDate) as Date!
+                        writeOrder.goDate = self.goDate!
                         writeOrder.flag = 1
                         writeOrder.reason = reason
                         self.navigationController?.pushViewController(writeOrder, animated: true)
@@ -538,18 +538,18 @@ class FlightListViewController: UIViewController , UITableViewDataSource , UITab
                 controller.backData = backTravelData
                 controller.indexPath = (indexPath! as NSIndexPath) as IndexPath!
                 controller.flightInfo = flightInfo
-                controller.goDate = (goDate! as NSDate) as Date!
+                controller.goDate = goDate
                 controller.backData = backTravelData
                 controller.backIndexPath = (backIndexPath! as NSIndexPath) as IndexPath!
                 controller.backFlightInfo = backFlightInfo
-                controller.backDate = (backDate! as NSDate) as Date!
+                controller.backDate = backDate
                 controller.flag = flag
             }else{
                 controller.data = travelData
                 controller.indexPath = (indexPath! as NSIndexPath) as IndexPath!
                 controller.flightInfo = flightInfo
-                controller.goDate = (goDate! as NSDate) as Date!
-                controller.backDate = (backDate! as NSDate) as Date!
+                controller.goDate = goDate!
+                controller.backDate = backDate
                 controller.flag = flag
                 controller.nextTitle = title
                 controller.params = params

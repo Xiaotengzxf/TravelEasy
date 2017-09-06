@@ -201,14 +201,15 @@ class URLCollection: NSObject {
     }
     
     func postRequest(_ urlString : String , params : [String : Any]? , encoding : ParameterEncoding , headers : [String : String]? , callback : @escaping (JSON? , Error?)->()) {
-        Alamofire.request(urlString, method: .post, parameters: params, encoding: encoding, headers: headers).validate().responseJSON { (response) in
-            switch response.result {
-            case .success(let value):
-                print(value)
-                callback( JSON(value) , nil)
-            case .failure(let error):
-                callback(nil , error)
+        Alamofire.request(urlString, method: .post, parameters: params, encoding: encoding, headers: headers).validate().response { (response) in
+            
+            if let data = response.data, let utf8Text = String(data: data, encoding: .utf8) {
+                print("Data: \(utf8Text)")
+                callback( JSON(parseJSON: utf8Text) , nil)
+            }else{
+                callback(nil , response.error)
             }
+            
         }
     }
     

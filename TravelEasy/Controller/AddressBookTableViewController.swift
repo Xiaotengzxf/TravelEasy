@@ -135,7 +135,7 @@ class AddressBookTableViewController: UITableViewController , UISearchResultsUpd
         if searchController.isActive {
             return 1
         }else{
-            return flag == 1 ? keys.count : arrCommonUser.count + keys.count
+            return flag == 1 ? keys.count : 1 + keys.count
         }
     }
 

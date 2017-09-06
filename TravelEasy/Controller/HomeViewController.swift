@@ -210,9 +210,9 @@ class HomeViewController: UIViewController , XZCalendarControllerDelegate , Bunk
             }
             controller.params = params
             if segmentedControl.selectedSegmentIndex == 1 {
-                controller.backDate = (backDateModel.date() as! NSDate) as Date!
+                controller.backDate = backDateModel.date()!
             }
-            controller.goDate = (dateModel.date() as! NSDate) as Date!
+            controller.goDate = dateModel.date()
         }
     }
  

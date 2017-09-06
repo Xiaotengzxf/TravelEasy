@@ -345,7 +345,7 @@ class OrderListTableViewController: UITableViewController, UISearchBarDelegate, 
         let manager = URLCollection()
         let hud = showHUD()
         if let token = manager.validateToken() {
-            manager.postRequest(manager.askOrderConfirmByCorpCredit, params: ["askOrderId" : askOrderId], encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
+            manager.postRequest(manager.askOrderConfirmByCorpCredit + "?askOrderId=\(askOrderId)", params: nil, encoding : URLEncoding.default ,headers: ["token" : token], callback: { [weak self] (jsonObject, error) in
                 hud.hide(animated: true)
                 if let model = jsonObject {
                     if model["Code"].int == 0 {

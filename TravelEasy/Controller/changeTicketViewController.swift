@@ -56,7 +56,7 @@ class changeTicketViewController: UIViewController , XZCalendarControllerDelegat
             let params : [String : AnyObject] = ["DepartureCode" : sCode as AnyObject , "DepartureCodeIsCity" : isCity as AnyObject , "ArrivalCode" : aCode as AnyObject , "ArrivalCodeIsCity" : aIsCity as AnyObject , "FlightDate" : flightDate as AnyObject , "FactBunkPriceLowestLimit" : factTicketPrice as AnyObject , "Airlines" : airlineCode as AnyObject]
             controller.title = "\(orderDetail["DepartureCityName"].stringValue) - \(orderDetail["ArrivalCityName"].stringValue)"
             controller.params = params
-            controller.goDate = (dateModel.date() as! NSDate) as Date!
+            controller.goDate = dateModel.date()
             controller.flag = 2
             controller.backFlightInfo = orderDetail
             controller.reason = reason
